@@ -1,0 +1,36 @@
+name: Android CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 9.6.1
+
+      # gradle.properties pins org.gradle.java.home to a local Windows JDK
+      # path for developer machines; override it here with the JDK 21 that
+      # actions/setup-java just installed on the runner.
+      - name: Lint
+        run: gradle -Dorg.gradle.java.home="$JAVA_HOME" lint
+
+      - name: Unit tests
+        run: gradle -Dorg.gradle.java.home="$JAVA_HOME" testDebugUnitTest
+
+      - name: Release build (validates R8/ProGuard rules)
+        run: gradle -Dorg.gradle.java.home="$JAVA_HOME" assembleRelease
