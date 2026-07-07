@@ -18,10 +18,13 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      # "current" (latest stable) instead of a hardcoded version: pinning to
+      # e.g. 9.6.1 broke every CI run immediately, since the setup-gradle
+      # action couldn't provision that exact patch version on the runner.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 9.6.1
+          gradle-version: current
 
       # gradle.properties pins org.gradle.java.home to a local Windows JDK
       # path for developer machines; override it here with the JDK 21 that
