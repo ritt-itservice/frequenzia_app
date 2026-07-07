@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Datenschutzerklärung – Frequenzia</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #FAFAFA; --ink: #1A1A1A; --muted: #6E6E73; --accent: #FF7A1E; --rule: #E5E2DD;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121212; --ink: #F5F5F5; --muted: #A0A0A6; --rule: #2A2A2D; }
+  }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    max-width: 680px; margin: 0 auto; padding: 48px 24px 80px;
+    line-height: 1.6;
+  }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  .updated { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
+  h2 { font-size: 19px; margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 24px; }
+  a { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); }
+  th { color: var(--muted); font-weight: 600; }
+  .badge {
+    display: inline-block; background: var(--accent); color: #fff; font-size: 12px;
+    font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<span class="badge">KEINE DATENERHEBUNG</span>
+<h1>Datenschutzerklärung – Frequenzia</h1>
+<p class="updated">Stand: Juli 2026</p>
+
+<p>
+  Frequenzia ist eine kostenlose, werbefreie Android-App zum Hören von Internetradio.
+  Diese Erklärung fasst kurz zusammen, was in Bezug auf deine Daten passiert – und vor
+  allem, was <strong>nicht</strong> passiert.
+</p>
+
+<h2>Kurzfassung</h2>
+<ul>
+  <li>Frequenzia sammelt <strong>keine</strong> personenbezogenen Daten.</li>
+  <li>Es gibt <strong>kein Nutzerkonto</strong>, keine Registrierung, kein Login.</li>
+  <li>Es sind <strong>keine Analytics-, Tracking- oder Werbe-SDKs</strong> eingebaut.</li>
+  <li>Favoriten und Verlauf werden <strong>ausschließlich lokal auf deinem Gerät</strong>
+      gespeichert und verlassen es nie.</li>
+  <li>Der komplette Quellcode ist öffentlich einsehbar:
+      <a href="https://github.com/ritt-itservice/frequenzia_app">github.com/ritt-itservice/frequenzia_app</a></li>
+</ul>
+
+<h2>Welche Daten die App lokal speichert</h2>
+<p>
+  Ausschließlich auf deinem Gerät (Room-Datenbank), nie an einen Server der App übertragen:
+</p>
+<table>
+  <tr><th>Daten</th><th>Zweck</th></tr>
+  <tr><td>Favorisierte Sender</td><td>Damit du sie in der App wiederfindest</td></tr>
+  <tr><td>Zuletzt gehörte Sender</td><td>Verlaufsanzeige in der App</td></tr>
+</table>
+<p>Beides lässt sich jederzeit über die Android-App-Einstellungen (App-Speicher/Daten löschen) oder durch Deinstallation der App vollständig entfernen.</p>
+
+<h2>Netzwerkzugriffe an Dritte</h2>
+<p>
+  Um Sender zu finden und zu streamen, kontaktiert die App zwei externe Dienste direkt von
+  deinem Gerät aus – ohne Umweg über einen eigenen Server der App:
+</p>
+<table>
+  <tr><th>Dienst</th><th>Wofür</th></tr>
+  <tr>
+    <td><a href="https://www.radio-browser.info/">Radio Browser API</a></td>
+    <td>Sendersuche und Sender-Metadaten (Name, Land, Genre, Stream-Adresse)</td>
+  </tr>
+  <tr>
+    <td>Der jeweilige Sender-Stream selbst</td>
+    <td>Audio-Wiedergabe – die Verbindung geht direkt an den Sender, nicht über Frequenzia</td>
+  </tr>
+</table>
+<p>
+  Wie bei jeder Internetverbindung technisch üblich, sehen diese Server dabei deine
+  IP-Adresse. Frequenzia selbst wertet das nicht aus, speichert es nicht und leitet nichts
+  davon weiter. Was die Betreiber dieser Dienste mit Anfragen an ihre eigene Infrastruktur
+  tun, unterliegt deren eigenen Datenschutzerklärungen, nicht dieser hier.
+</p>
+
+<h2>Berechtigungen</h2>
+<p>Die App fragt nur die technisch nötigen Berechtigungen für Streaming und Hintergrundwiedergabe an – keine für Standort, Kontakte, Kamera, Mikrofon oder Speicherzugriff.</p>
+
+<h2>Kinder</h2>
+<p>Die App richtet sich nicht gezielt an Kinder, sammelt aber ohnehin von niemandem personenbezogene Daten.</p>
+
+<h2>Änderungen dieser Erklärung</h2>
+<p>
+  Falls sich an der Datenverarbeitung etwas ändert, wird diese Seite aktualisiert
+  (Versionsstand siehe Datum oben) und der Änderungsverlauf ist über die
+  <a href="https://github.com/ritt-itservice/frequenzia_app/commits/main/docs/privacy/index.html">Git-Historie</a>
+  nachvollziehbar.
+</p>
+
+<h2>Kontakt</h2>
+<p>Fragen zum Datenschutz: <a href="mailto:kontakt@ritt-itservice.de">kontakt@ritt-itservice.de</a></p>
+
+</body>
+</html>
