@@ -28,7 +28,7 @@ android {
         applicationId = "de.rittitservice.frequenzia"
         minSdk = 26
         targetSdk = 37
-        versionCode = 6
+        versionCode = 7
         versionName = "1.4.0"
     }
 
