@@ -33,6 +33,12 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
+    // Sender, der tatsächlich im Player geladen ist (nicht nur zur Vorschau
+    // angezeigt) – nur der zählt für den Play/Pause-Status und landet im
+    // Verlauf "Zuletzt gehört".
+    private val _nowPlayingStationId = MutableStateFlow<String?>(null)
+    val nowPlayingStationId: StateFlow<String?> = _nowPlayingStationId.asStateFlow()
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
@@ -84,8 +90,17 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    // Zeigt den Sender im Player an, ohne die Wiedergabe zu starten – für den
+    // Tap auf eine Senderzeile (nur Vorschau).
+    fun selectStation(station: RadioStation) {
+        _currentStation.value = station
+    }
+
+    // Startet die tatsächliche Wiedergabe – nur das zählt als "gehört" und
+    // landet im Verlauf.
     fun playStation(station: RadioStation) {
         _currentStation.value = station
+        _nowPlayingStationId.value = station.stationuuid
         playerController.playStation(station)
         viewModelScope.launch {
             repository.registerClick(station.stationuuid)
@@ -94,7 +109,14 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun togglePlayPause() {
-        playerController.togglePlayPause()
+        val station = _currentStation.value ?: return
+        if (_nowPlayingStationId.value == station.stationuuid) {
+            playerController.togglePlayPause()
+        } else {
+            // Angezeigter Sender ist noch nicht geladen (nur Vorschau) –
+            // Play-Druck startet ihn jetzt tatsächlich.
+            playStation(station)
+        }
     }
 
     fun toggleFavorite(station: RadioStation) {

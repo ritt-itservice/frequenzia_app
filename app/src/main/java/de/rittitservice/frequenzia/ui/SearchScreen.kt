@@ -35,7 +35,8 @@ fun SearchScreen(
     isLoading: Boolean,
     onSearch: (String) -> Unit,
     onLoadTop: () -> Unit,
-    onStationClick: (RadioStation) -> Unit,
+    onStationSelect: (RadioStation) -> Unit,
+    onStationPlay: (RadioStation) -> Unit,
     onFavoriteToggle: (RadioStation) -> Unit,
     isFavorite: (String) -> Boolean
 ) {
@@ -89,7 +90,8 @@ fun SearchScreen(
                 StationRow(
                     station = station,
                     isFavorite = isFavorite(station.stationuuid),
-                    onClick = { onStationClick(station) },
+                    onSelect = { onStationSelect(station) },
+                    onPlay = { onStationPlay(station) },
                     onFavoriteToggle = { onFavoriteToggle(station) }
                 )
             }
@@ -101,7 +103,8 @@ fun SearchScreen(
 fun StationRow(
     station: RadioStation,
     isFavorite: Boolean,
-    onClick: () -> Unit,
+    onSelect: () -> Unit,
+    onPlay: () -> Unit,
     onFavoriteToggle: () -> Unit
 ) {
     Row(
@@ -110,9 +113,10 @@ fun StationRow(
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            // Tippen auf die Zeile (z. B. den Sendernamen) spielt den Sender
-            // ebenfalls ab und öffnet den Player – nicht nur der Play-Button.
-            .clickable(onClick = onClick)
+            // Tippen auf die Zeile (z. B. den Sendernamen) zeigt den Sender
+            // nur im Player an, ohne ihn abzuspielen. Nur der Play-Button
+            // startet die tatsächliche Wiedergabe.
+            .clickable(onClick = onSelect)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -158,7 +162,7 @@ fun StationRow(
         }
         Spacer(modifier = Modifier.width(4.dp))
         FilledIconButton(
-            onClick = onClick,
+            onClick = onPlay,
             shape = CircleShape,
             colors = IconButtonDefaults.filledIconButtonColors(
                 containerColor = MaterialTheme.colorScheme.primary,

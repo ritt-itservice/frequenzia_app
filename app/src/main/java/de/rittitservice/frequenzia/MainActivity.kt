@@ -64,6 +64,10 @@ fun FrequenziaApp(viewModel: StationViewModel) {
     val navController = rememberNavController()
     val currentStation by viewModel.currentStation.collectAsStateWithLifecycle()
     val isPlaying by viewModel.isPlaying.collectAsStateWithLifecycle()
+    val nowPlayingStationId by viewModel.nowPlayingStationId.collectAsStateWithLifecycle()
+    // Nur "wirklich spielt" für den gerade angezeigten Sender, nicht nur
+    // zur Vorschau geöffnet.
+    val isCurrentStationPlaying = isPlaying && currentStation?.stationuuid == nowPlayingStationId
     val favorites by viewModel.favorites.collectAsStateWithLifecycle(initialValue = emptyList())
     val error by viewModel.error.collectAsStateWithLifecycle()
     var isPlayerExpanded by remember { mutableStateOf(false) }
@@ -84,7 +88,7 @@ fun FrequenziaApp(viewModel: StationViewModel) {
                     currentStation?.let { station ->
                         MiniPlayer(
                             station = station,
-                            isPlaying = isPlaying,
+                            isPlaying = isCurrentStationPlaying,
                             onTogglePlayPause = { viewModel.togglePlayPause() },
                             onExpand = { isPlayerExpanded = true }
                         )
@@ -108,7 +112,11 @@ fun FrequenziaApp(viewModel: StationViewModel) {
                         isLoading = isLoading,
                         onSearch = { query -> viewModel.search(query) },
                         onLoadTop = { viewModel.loadTopStations() },
-                        onStationClick = {
+                        onStationSelect = {
+                            viewModel.selectStation(it)
+                            isPlayerExpanded = true
+                        },
+                        onStationPlay = {
                             viewModel.playStation(it)
                             isPlayerExpanded = true
                         },
@@ -119,7 +127,11 @@ fun FrequenziaApp(viewModel: StationViewModel) {
                 composable(Screen.Favorites.route) {
                     FavoritesScreen(
                         favorites = favorites,
-                        onStationClick = {
+                        onStationSelect = {
+                            viewModel.selectStation(it)
+                            isPlayerExpanded = true
+                        },
+                        onStationPlay = {
                             viewModel.playStation(it)
                             isPlayerExpanded = true
                         },
@@ -132,7 +144,11 @@ fun FrequenziaApp(viewModel: StationViewModel) {
 
                     RecentlyPlayedScreen(
                         recentlyPlayed = recentlyPlayed,
-                        onStationClick = {
+                        onStationSelect = {
+                            viewModel.selectStation(it)
+                            isPlayerExpanded = true
+                        },
+                        onStationPlay = {
                             viewModel.playStation(it)
                             isPlayerExpanded = true
                         },
@@ -153,7 +169,7 @@ fun FrequenziaApp(viewModel: StationViewModel) {
                 val favoriteIds = favorites.map { it.stationuuid }.toSet()
                 PlayerScreen(
                     station = station,
-                    isPlaying = isPlaying,
+                    isPlaying = isCurrentStationPlaying,
                     isFavorite = station.stationuuid in favoriteIds,
                     onTogglePlayPause = { viewModel.togglePlayPause() },
                     onFavoriteToggle = { viewModel.toggleFavorite(station) },

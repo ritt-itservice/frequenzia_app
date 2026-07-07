@@ -68,7 +68,7 @@ fun PlayerScreen(
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    "Wird abgespielt",
+                    if (isPlaying) "Wird abgespielt" else "Sender",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onBackground
                 )

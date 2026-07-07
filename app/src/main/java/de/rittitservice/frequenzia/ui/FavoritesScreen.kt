@@ -17,7 +17,8 @@ import de.rittitservice.frequenzia.data.RadioStation
 @Composable
 fun FavoritesScreen(
     favorites: List<FavoriteStation>,
-    onStationClick: (RadioStation) -> Unit,
+    onStationSelect: (RadioStation) -> Unit,
+    onStationPlay: (RadioStation) -> Unit,
     onFavoriteToggle: (RadioStation) -> Unit
 ) {
     if (favorites.isEmpty()) {
@@ -50,7 +51,8 @@ fun FavoritesScreen(
             StationRow(
                 station = station,
                 isFavorite = true,
-                onClick = { onStationClick(station) },
+                onSelect = { onStationSelect(station) },
+                onPlay = { onStationPlay(station) },
                 onFavoriteToggle = { onFavoriteToggle(station) }
             )
         }

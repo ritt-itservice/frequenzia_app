@@ -17,7 +17,8 @@ import de.rittitservice.frequenzia.data.RecentlyPlayedStation
 @Composable
 fun RecentlyPlayedScreen(
     recentlyPlayed: List<RecentlyPlayedStation>,
-    onStationClick: (RadioStation) -> Unit,
+    onStationSelect: (RadioStation) -> Unit,
+    onStationPlay: (RadioStation) -> Unit,
     onFavoriteToggle: (RadioStation) -> Unit,
     isFavorite: (String) -> Boolean
 ) {
@@ -51,7 +52,8 @@ fun RecentlyPlayedScreen(
             StationRow(
                 station = station,
                 isFavorite = isFavorite(station.stationuuid),
-                onClick = { onStationClick(station) },
+                onSelect = { onStationSelect(station) },
+                onPlay = { onStationPlay(station) },
                 onFavoriteToggle = { onFavoriteToggle(station) }
             )
         }
