@@ -45,7 +45,12 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             if (hasKeystoreProperties) {
                 signingConfig = signingConfigs.getByName("release")
             }
@@ -66,6 +71,24 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    sourceSets {
+        // Room-Schema-Historie (siehe ksp { arg("room.schemaLocation", ...) }
+        // unten) als Debug-Asset verfügbar machen: Robolectric liest für
+        // JVM-Unit-Tests die Assets des Debug-Varianten-Merges (nicht die
+        // des "test"-Source-Sets), siehe generateDebugUnitTestConfig.
+        getByName("debug").assets.srcDirs("$projectDir/schemas")
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 // Kotlin-Zielversion für die Bytecode-Erzeugung (Android-Bytecode bleibt
@@ -114,4 +137,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Tests (JVM-Unit-Tests via Robolectric, kein Emulator nötig)
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("androidx.room:room-testing:2.8.4")
+    testImplementation("androidx.sqlite:sqlite-framework:2.6.2")
+    testImplementation("org.robolectric:robolectric:4.13")
+    testImplementation("androidx.test:core:1.6.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
