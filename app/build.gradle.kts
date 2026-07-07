@@ -28,7 +28,7 @@ android {
         applicationId = "de.rittitservice.frequenzia"
         minSdk = 26
         targetSdk = 37
-        versionCode = 7
+        versionCode = 8
         versionName = "1.4.0"
     }
 
@@ -53,6 +53,12 @@ android {
             )
             if (hasKeystoreProperties) {
                 signingConfig = signingConfigs.getByName("release")
+            }
+            // Packt Debug-Symbole für native Bibliotheken (transitiv über
+            // Abhängigkeiten wie Media3) automatisch ins App Bundle, damit
+            // Play Console native Abstürze lesbar symbolisieren kann.
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
             }
         }
     }
