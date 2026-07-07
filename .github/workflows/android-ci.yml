@@ -34,3 +34,12 @@ jobs:
 
       - name: Release build (validates R8/ProGuard rules)
         run: gradle -Dorg.gradle.java.home="$JAVA_HOME" assembleRelease
+
+      # No signing secrets are configured in this repo (the release
+      # keystore stays local, see keystore.properties), so this APK is
+      # unsigned and for build verification / manual re-signing only.
+      - name: Upload unsigned release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-unsigned
+          path: app/build/outputs/apk/release/*.apk
