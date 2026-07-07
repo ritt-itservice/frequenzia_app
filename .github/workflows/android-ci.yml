@@ -18,25 +18,29 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      # "current" (latest stable) instead of a hardcoded version: pinning to
-      # e.g. 9.6.1 broke every CI run immediately, since the setup-gradle
-      # action couldn't provision that exact patch version on the runner.
+      # Uses the committed Gradle Wrapper (gradlew) to download Gradle
+      # directly from services.gradle.org, still with build-cache support.
+      # A previous attempt pinning gradle-version explicitly (and even
+      # "current") made setup-gradle fail immediately on every run, since
+      # its own version-provisioning mechanism couldn't fetch it on the
+      # runner — the wrapper's plain zip download is a more reliable path.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: current
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
 
       # gradle.properties pins org.gradle.java.home to a local Windows JDK
       # path for developer machines; override it here with the JDK 21 that
       # actions/setup-java just installed on the runner.
       - name: Lint
-        run: gradle -Dorg.gradle.java.home="$JAVA_HOME" lint
+        run: ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" lint
 
       - name: Unit tests
-        run: gradle -Dorg.gradle.java.home="$JAVA_HOME" testDebugUnitTest
+        run: ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" testDebugUnitTest
 
       - name: Release build (validates R8/ProGuard rules)
-        run: gradle -Dorg.gradle.java.home="$JAVA_HOME" assembleRelease
+        run: ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" assembleRelease
 
       # No signing secrets are configured in this repo (the release
       # keystore stays local, see keystore.properties), so this APK is
