@@ -65,7 +65,17 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
         _error.value = null
     }
 
+    // Merkt sich die zuletzt fehlgeschlagene Aktion, damit der
+    // "Wiederholen"-Button auf der Fehlermeldung genau das nochmal versuchen
+    // kann (Top-Sender laden oder dieselbe Suche erneut ausführen).
+    private var lastAction: (() -> Unit)? = null
+
+    fun retryLastAction() {
+        lastAction?.invoke()
+    }
+
     fun loadTopStations() {
+        lastAction = ::loadTopStations
         viewModelScope.launch {
             _isLoading.value = true
             runCatching { repository.getTopStations() }
@@ -76,6 +86,7 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun search(query: String, countryCode: String? = null, tag: String? = null) {
+        lastAction = { search(query, countryCode, tag) }
         viewModelScope.launch {
             _isLoading.value = true
             runCatching {

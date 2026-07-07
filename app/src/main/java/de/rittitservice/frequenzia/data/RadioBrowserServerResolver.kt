@@ -33,4 +33,10 @@ object RadioBrowserServerResolver {
         cachedBaseUrl = baseUrl
         return baseUrl
     }
+
+    // Erzwingt bei der nächsten Anfrage die Wahl eines neuen Mirrors – z. B.
+    // wenn der aktuell gewählte gerade nicht erreichbar war.
+    fun invalidate() {
+        cachedBaseUrl = null
+    }
 }
