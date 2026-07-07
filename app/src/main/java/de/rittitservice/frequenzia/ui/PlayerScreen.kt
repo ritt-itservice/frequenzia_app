@@ -32,9 +32,10 @@ fun PlayerScreen(
     isFavorite: Boolean,
     onTogglePlayPause: () -> Unit,
     onFavoriteToggle: () -> Unit,
-    onCollapse: () -> Unit
+    onCollapse: () -> Unit,
+    showCollapseButton: Boolean = true
 ) {
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(
@@ -46,120 +47,204 @@ fun PlayerScreen(
                 )
             )
     ) {
+        // Nicht die Geräte-Ausrichtung prüfen, sondern die tatsächlich
+        // verfügbare Fläche: Im Tablet-Seitenpanel ist das Gerät oft im
+        // Querformat, das Panel selbst aber schmal und hoch – dort muss
+        // trotzdem das (schmale) Hochformat-Layout greifen.
+        val isWide = maxWidth > maxHeight
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(24.dp)
         ) {
-            // Obere Leiste: Einklappen (Sendername bleibt dabei sichtbar –
-            // Zurück-Pfeil statt Chevron, analog zur Referenz)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onCollapse) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Minimieren",
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    if (isPlaying) "Wird abgespielt" else "Sender",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onBackground
+            TopBar(isPlaying, onCollapse, showCollapseButton)
+
+            if (isWide) {
+                LandscapePlayerContent(
+                    station = station,
+                    isPlaying = isPlaying,
+                    isFavorite = isFavorite,
+                    onTogglePlayPause = onTogglePlayPause,
+                    onFavoriteToggle = onFavoriteToggle
                 )
-                Spacer(modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.size(48.dp)) // Balance zur linken Icon-Breite
-            }
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // Rundes Cover mit Akzentfarb-Ring ("On Air", kein Fortschritt/Scrubber
-            // – Live-Streams haben keine Position/Dauer)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.75f)
-                    .aspectRatio(1f)
-                    .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                    .padding(12.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = station.favicon,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    error = painterResource(R.drawable.ic_launcher_foreground)
+            } else {
+                PortraitPlayerContent(
+                    station = station,
+                    isPlaying = isPlaying,
+                    isFavorite = isFavorite,
+                    onTogglePlayPause = onTogglePlayPause,
+                    onFavoriteToggle = onFavoriteToggle
                 )
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(32.dp))
+// Obere Leiste: Einklappen (Sendername bleibt dabei sichtbar – Zurück-Pfeil
+// statt Chevron, analog zur Referenz). Im Tablet-Seitenpanel gibt es nichts
+// einzuklappen, daher dort ausblendbar.
+@Composable
+private fun TopBar(isPlaying: Boolean, onCollapse: () -> Unit, showCollapseButton: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (showCollapseButton) {
+            IconButton(onClick = onCollapse) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Minimieren",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.size(48.dp))
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            if (isPlaying) "Wird abgespielt" else "Sender",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.size(48.dp)) // Balance zur linken Icon-Breite
+    }
+}
 
-            Text(
-                text = station.name,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center
+@Composable
+private fun Cover(station: RadioStation, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
+            .padding(12.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surface),
+        contentAlignment = Alignment.Center
+    ) {
+        AsyncImage(
+            model = station.favicon,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            error = painterResource(R.drawable.ic_launcher_foreground)
+        )
+    }
+}
+
+@Composable
+private fun StationInfo(station: RadioStation, textAlign: TextAlign) {
+    Text(
+        text = station.name,
+        style = MaterialTheme.typography.headlineSmall,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onBackground,
+        textAlign = textAlign,
+        modifier = Modifier.fillMaxWidth()
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Text(
+        text = listOfNotNull(station.country, station.tags).joinToString(" · "),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = textAlign,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun Controls(
+    isPlaying: Boolean,
+    isFavorite: Boolean,
+    onTogglePlayPause: () -> Unit,
+    onFavoriteToggle: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        IconButton(
+            onClick = onFavoriteToggle,
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(
+                imageVector = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
+                contentDescription = "Favorit",
+                tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(28.dp)
             )
+        }
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = listOfNotNull(station.country, station.tags).joinToString(" · "),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+        FilledIconButton(
+            onClick = onTogglePlayPause,
+            modifier = Modifier.size(80.dp),
+            colors = IconButtonDefaults.filledIconButtonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             )
+        ) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = "Play/Pause",
+                modifier = Modifier.size(40.dp)
+            )
+        }
 
+        Spacer(modifier = Modifier.size(48.dp)) // Balance zum Favoriten-Button
+    }
+}
+
+@Composable
+private fun PortraitPlayerContent(
+    station: RadioStation,
+    isPlaying: Boolean,
+    isFavorite: Boolean,
+    onTogglePlayPause: () -> Unit,
+    onFavoriteToggle: () -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(modifier = Modifier.height(48.dp))
+
+        // Kein Fortschritt/Scrubber – Live-Streams haben keine Position/Dauer.
+        Cover(station, modifier = Modifier.fillMaxWidth(0.75f))
+
+        Spacer(modifier = Modifier.height(32.dp))
+        StationInfo(station, textAlign = TextAlign.Center)
+        Spacer(modifier = Modifier.height(16.dp))
+        StationWaveform(isPlaying = isPlaying)
+        Spacer(modifier = Modifier.weight(1f))
+        Controls(isPlaying, isFavorite, onTogglePlayPause, onFavoriteToggle)
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+// Im Querformat wäre ein an der Breite orientiertes Cover höher als der
+// Bildschirm und würde Name/Steuerung nach unten aus dem sichtbaren Bereich
+// schieben – daher hier an der Höhe orientiert und links/rechts aufgeteilt.
+@Composable
+private fun LandscapePlayerContent(
+    station: RadioStation,
+    isPlaying: Boolean,
+    isFavorite: Boolean,
+    onTogglePlayPause: () -> Unit,
+    onFavoriteToggle: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxSize(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Cover(station, modifier = Modifier.fillMaxHeight(0.75f))
+
+        Spacer(modifier = Modifier.width(32.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            StationInfo(station, textAlign = TextAlign.Start)
             Spacer(modifier = Modifier.height(16.dp))
-
             StationWaveform(isPlaying = isPlaying)
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Steuerung: Favorit + großer Play/Pause-Button
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(32.dp)
-            ) {
-                IconButton(
-                    onClick = onFavoriteToggle,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
-                        contentDescription = "Favorit",
-                        tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-
-                FilledIconButton(
-                    onClick = onTogglePlayPause,
-                    modifier = Modifier.size(80.dp),
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) {
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = "Play/Pause",
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.size(48.dp)) // Balance zum Favoriten-Button
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+            Controls(isPlaying, isFavorite, onTogglePlayPause, onFavoriteToggle)
         }
     }
 }
