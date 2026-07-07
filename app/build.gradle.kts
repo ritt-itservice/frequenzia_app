@@ -117,6 +117,10 @@ dependencies {
 
     // Media3 / ExoPlayer für Streaming + Background Playback
     implementation("androidx.media3:media3-exoplayer:1.4.1")
+    // HLS-Streams (.m3u8) sind bei Radiosendern verbreitet (u.a. RTL); ohne
+    // diese Erweiterung bricht ExoPlayer beim Laden mit einer
+    // ClassNotFoundException ab, unbemerkt tief in der MediaSession-Ebene.
+    implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
     implementation("androidx.media3:media3-session:1.4.1")
     implementation("androidx.media3:media3-ui:1.4.1")
 
