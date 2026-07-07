@@ -45,12 +45,14 @@ class PlaybackService : MediaSessionService() {
         super.onDestroy()
     }
 
-    // Wichtig: verhindert, dass der Service beim Wegwischen der App aus den
-    // "Recent Apps" sofort beendet wird, solange noch etwas läuft.
+    // Stoppt die Wiedergabe immer, sobald die App aus den "Zuletzt verwendet"
+    // weggewischt wird – auch wenn gerade ein Sender läuft. Das ist bewusst
+    // anders als das übliche Musik-App-Verhalten (dort läuft es meist weiter).
     override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-        val player = mediaSession?.player ?: return
-        if (!player.playWhenReady || player.mediaItemCount == 0) {
-            stopSelf()
+        mediaSession?.player?.apply {
+            stop()
+            clearMediaItems()
         }
+        stopSelf()
     }
 }

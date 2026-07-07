@@ -7,6 +7,7 @@ import de.rittitservice.frequenzia.data.FavoritesDatabase
 import de.rittitservice.frequenzia.data.RadioStation
 import de.rittitservice.frequenzia.data.StationRepository
 import de.rittitservice.frequenzia.data.toFavorite
+import de.rittitservice.frequenzia.data.toRecentlyPlayed
 import de.rittitservice.frequenzia.playback.PlayerController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +18,7 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
 
     private val repository = StationRepository()
     private val favoritesDao = FavoritesDatabase.getInstance(application).favoritesDao()
+    private val recentlyPlayedDao = FavoritesDatabase.getInstance(application).recentlyPlayedDao()
     val playerController = PlayerController(application)
 
     private val _searchResults = MutableStateFlow<List<RadioStation>>(emptyList())
@@ -31,7 +33,11 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     val favorites = favoritesDao.getAll()
+    val recentlyPlayed = recentlyPlayedDao.getRecent()
 
     init {
         playerController.connect { controller ->
@@ -39,9 +45,18 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                     _isPlaying.value = isPlaying
                 }
+
+                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                    _isPlaying.value = false
+                    _error.value = "Wiedergabe fehlgeschlagen. Sender evtl. nicht erreichbar."
+                }
             })
         }
         loadTopStations()
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 
     fun loadTopStations() {
@@ -49,6 +64,7 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
             _isLoading.value = true
             runCatching { repository.getTopStations() }
                 .onSuccess { _searchResults.value = it }
+                .onFailure { _error.value = "Sender konnten nicht geladen werden. Bitte erneut versuchen." }
             _isLoading.value = false
         }
     }
@@ -63,6 +79,7 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
                     tag = tag
                 )
             }.onSuccess { _searchResults.value = it }
+                .onFailure { _error.value = "Suche fehlgeschlagen. Bitte erneut versuchen." }
             _isLoading.value = false
         }
     }
@@ -70,7 +87,10 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
     fun playStation(station: RadioStation) {
         _currentStation.value = station
         playerController.playStation(station)
-        viewModelScope.launch { repository.registerClick(station.stationuuid) }
+        viewModelScope.launch {
+            repository.registerClick(station.stationuuid)
+            recentlyPlayedDao.insert(station.toRecentlyPlayed())
+        }
     }
 
     fun togglePlayPause() {

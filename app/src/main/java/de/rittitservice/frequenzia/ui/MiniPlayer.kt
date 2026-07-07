@@ -1,6 +1,7 @@
 package de.rittitservice.frequenzia.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
@@ -21,12 +22,14 @@ import de.rittitservice.frequenzia.data.RadioStation
 fun MiniPlayer(
     station: RadioStation,
     isPlaying: Boolean,
-    onTogglePlayPause: () -> Unit
+    onTogglePlayPause: () -> Unit,
+    onExpand: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(onClick = onExpand)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
