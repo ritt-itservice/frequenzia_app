@@ -108,7 +108,10 @@ fun FrequenziaApp(viewModel: StationViewModel) {
                         isLoading = isLoading,
                         onSearch = { query -> viewModel.search(query) },
                         onLoadTop = { viewModel.loadTopStations() },
-                        onStationClick = { viewModel.playStation(it) },
+                        onStationClick = {
+                            viewModel.playStation(it)
+                            isPlayerExpanded = true
+                        },
                         onFavoriteToggle = { viewModel.toggleFavorite(it) },
                         isFavorite = { it in favoriteIds }
                     )
@@ -116,7 +119,10 @@ fun FrequenziaApp(viewModel: StationViewModel) {
                 composable(Screen.Favorites.route) {
                     FavoritesScreen(
                         favorites = favorites,
-                        onStationClick = { viewModel.playStation(it) },
+                        onStationClick = {
+                            viewModel.playStation(it)
+                            isPlayerExpanded = true
+                        },
                         onFavoriteToggle = { viewModel.toggleFavorite(it) }
                     )
                 }
@@ -126,7 +132,10 @@ fun FrequenziaApp(viewModel: StationViewModel) {
 
                     RecentlyPlayedScreen(
                         recentlyPlayed = recentlyPlayed,
-                        onStationClick = { viewModel.playStation(it) },
+                        onStationClick = {
+                            viewModel.playStation(it)
+                            isPlayerExpanded = true
+                        },
                         onFavoriteToggle = { viewModel.toggleFavorite(it) },
                         isFavorite = { it in favoriteIds }
                     )
