@@ -1,0 +1,178 @@
+package de.rittitservice.frequenzia
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import de.rittitservice.frequenzia.ui.FavoritesScreen
+import de.rittitservice.frequenzia.ui.PlayerScreen
+import de.rittitservice.frequenzia.ui.RecentlyPlayedScreen
+import de.rittitservice.frequenzia.ui.SearchScreen
+import de.rittitservice.frequenzia.ui.StationViewModel
+
+// Master-Detail-Layout für Tablets (smallestScreenWidthDp >= 600): feste
+// Navigationsleiste statt Bottom-Bar, Senderliste + dauerhaft sichtbares
+// Player-Panel nebeneinander statt Mini-Player + Vollbild-Overlay.
+@Composable
+fun TabletApp(viewModel: StationViewModel) {
+    val navController = rememberNavController()
+    val currentStation by viewModel.currentStation.collectAsStateWithLifecycle()
+    val isPlaying by viewModel.isPlaying.collectAsStateWithLifecycle()
+    val nowPlayingStationId by viewModel.nowPlayingStationId.collectAsStateWithLifecycle()
+    val isCurrentStationPlaying = isPlaying && currentStation?.stationuuid == nowPlayingStationId
+    val favorites by viewModel.favorites.collectAsStateWithLifecycle(initialValue = emptyList())
+    val error by viewModel.error.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(error) {
+        error?.let {
+            val result = snackbarHostState.showSnackbar(
+                message = it,
+                actionLabel = "Wiederholen",
+                duration = SnackbarDuration.Long
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.retryLastAction()
+            }
+            viewModel.clearError()
+        }
+    }
+
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            TabletNavigationRail(navController)
+
+            Box(modifier = Modifier.weight(1f)) {
+                NavHost(
+                    navController = navController,
+                    startDestination = Screen.Search.route
+                ) {
+                    composable(Screen.Search.route) {
+                        val stations by viewModel.searchResults.collectAsStateWithLifecycle()
+                        val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+                        val favoriteIds = favorites.map { it.stationuuid }.toSet()
+
+                        SearchScreen(
+                            stations = stations,
+                            isLoading = isLoading,
+                            onSearch = { query -> viewModel.search(query) },
+                            onLoadTop = { viewModel.loadTopStations() },
+                            onStationSelect = { viewModel.selectStation(it) },
+                            onStationPlay = { viewModel.playStation(it) },
+                            onFavoriteToggle = { viewModel.toggleFavorite(it) },
+                            isFavorite = { it in favoriteIds }
+                        )
+                    }
+                    composable(Screen.Favorites.route) {
+                        FavoritesScreen(
+                            favorites = favorites,
+                            onStationSelect = { viewModel.selectStation(it) },
+                            onStationPlay = { viewModel.playStation(it) },
+                            onFavoriteToggle = { viewModel.toggleFavorite(it) }
+                        )
+                    }
+                    composable(Screen.RecentlyPlayed.route) {
+                        val recentlyPlayed by viewModel.recentlyPlayed.collectAsStateWithLifecycle(initialValue = emptyList())
+                        val favoriteIds = favorites.map { it.stationuuid }.toSet()
+
+                        RecentlyPlayedScreen(
+                            recentlyPlayed = recentlyPlayed,
+                            onStationSelect = { viewModel.selectStation(it) },
+                            onStationPlay = { viewModel.playStation(it) },
+                            onFavoriteToggle = { viewModel.toggleFavorite(it) },
+                            isFavorite = { it in favoriteIds }
+                        )
+                    }
+                }
+            }
+
+            currentStation?.let { station ->
+                val favoriteIds = favorites.map { it.stationuuid }.toSet()
+                Surface(
+                    modifier = Modifier
+                        .width(400.dp)
+                        .fillMaxHeight(),
+                    color = MaterialTheme.colorScheme.background,
+                    tonalElevation = 2.dp
+                ) {
+                    PlayerScreen(
+                        station = station,
+                        isPlaying = isCurrentStationPlaying,
+                        isFavorite = station.stationuuid in favoriteIds,
+                        onTogglePlayPause = { viewModel.togglePlayPause() },
+                        onFavoriteToggle = { viewModel.toggleFavorite(station) },
+                        onCollapse = {},
+                        showCollapseButton = false
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TabletNavigationRail(navController: NavHostController) {
+    val items = listOf(Screen.Search, Screen.Favorites, Screen.RecentlyPlayed)
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+
+    NavigationRail(
+        // Standardbreite (80dp) schneidet "Zuletzt gehört" ab; etwas breiter
+        // reicht für zwei Textzeilen ohne Kürzung.
+        modifier = Modifier.width(96.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Spacer(modifier = Modifier.height(12.dp))
+        items.forEach { screen ->
+            val selected = currentRoute == screen.route
+            val icon = when (screen) {
+                is Screen.Search -> Icons.Default.Search
+                is Screen.Favorites -> Icons.Default.Star
+                is Screen.RecentlyPlayed -> Icons.Default.History
+            }
+            NavigationRailItem(
+                selected = selected,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = { Icon(icon, contentDescription = screen.label) },
+                label = {
+                    Text(
+                        screen.label,
+                        style = MaterialTheme.typography.labelMedium,
+                        textAlign = TextAlign.Center
+                    )
+                },
+                colors = NavigationRailItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                    indicatorColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+        }
+    }
+}

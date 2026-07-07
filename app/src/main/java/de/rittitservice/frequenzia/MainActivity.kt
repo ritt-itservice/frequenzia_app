@@ -20,10 +20,12 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -47,13 +49,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FrequenziaTheme {
-                FrequenziaApp(viewModel)
+                // smallestScreenWidthDp ist geräteabhängig und ändert sich
+                // nicht bei Rotation (klassische sw600dp-Tablet-Erkennung) –
+                // ein gedrehtes Handy bleibt damit beim Handy-Layout.
+                val isTablet = LocalConfiguration.current.smallestScreenWidthDp >= 600
+                if (isTablet) {
+                    TabletApp(viewModel)
+                } else {
+                    FrequenziaApp(viewModel)
+                }
             }
         }
     }
 }
 
-private sealed class Screen(val route: String, val label: String) {
+sealed class Screen(val route: String, val label: String) {
     data object Search : Screen("search", "Suche")
     data object Favorites : Screen("favorites", "Favoriten")
     data object RecentlyPlayed : Screen("recently_played", "Zuletzt gehört")
@@ -70,12 +80,22 @@ fun FrequenziaApp(viewModel: StationViewModel) {
     val isCurrentStationPlaying = isPlaying && currentStation?.stationuuid == nowPlayingStationId
     val favorites by viewModel.favorites.collectAsStateWithLifecycle(initialValue = emptyList())
     val error by viewModel.error.collectAsStateWithLifecycle()
-    var isPlayerExpanded by remember { mutableStateOf(false) }
+    // rememberSaveable statt remember: sonst geht der aufgeklappte Player bei
+    // einer Konfigurationsänderung (z. B. Drehen des Geräts) verloren, weil
+    // die Activity dabei neu erstellt wird.
+    var isPlayerExpanded by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(error) {
         error?.let {
-            snackbarHostState.showSnackbar(it)
+            val result = snackbarHostState.showSnackbar(
+                message = it,
+                actionLabel = "Wiederholen",
+                duration = SnackbarDuration.Long
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.retryLastAction()
+            }
             viewModel.clearError()
         }
     }
