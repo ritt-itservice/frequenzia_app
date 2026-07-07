@@ -107,6 +107,7 @@ fun FrequenziaApp(viewModel: StationViewModel) {
                         stations = stations,
                         isLoading = isLoading,
                         onSearch = { query -> viewModel.search(query) },
+                        onLoadTop = { viewModel.loadTopStations() },
                         onStationClick = { viewModel.playStation(it) },
                         onFavoriteToggle = { viewModel.toggleFavorite(it) },
                         isFavorite = { it in favoriteIds }

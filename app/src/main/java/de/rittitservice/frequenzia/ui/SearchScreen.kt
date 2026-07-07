@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -17,11 +16,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import de.rittitservice.frequenzia.R
 import de.rittitservice.frequenzia.data.RadioStation
+import kotlinx.coroutines.delay
+
+private const val SEARCH_DEBOUNCE_MS = 400L
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,11 +33,19 @@ fun SearchScreen(
     stations: List<RadioStation>,
     isLoading: Boolean,
     onSearch: (String) -> Unit,
+    onLoadTop: () -> Unit,
     onStationClick: (RadioStation) -> Unit,
     onFavoriteToggle: (RadioStation) -> Unit,
     isFavorite: (String) -> Boolean
 ) {
     var query by remember { mutableStateOf("") }
+
+    // Sucht automatisch während des Tippens (entprellt, damit nicht bei
+    // jedem Tastendruck eine eigene Netzwerkanfrage rausgeht).
+    LaunchedEffect(query) {
+        delay(SEARCH_DEBOUNCE_MS)
+        if (query.isBlank()) onLoadTop() else onSearch(query)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         OutlinedTextField(
@@ -107,19 +119,14 @@ fun StationRow(
                 .background(MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.Center
         ) {
-            if (station.favicon.isNullOrBlank()) {
-                Icon(
-                    imageVector = Icons.Default.Radio,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            } else {
-                AsyncImage(
-                    model = station.favicon,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            AsyncImage(
+                model = station.favicon,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                // Sender ohne eigenes Icon (oder mit kaputter Favicon-URL)
+                // bekommen das App-Icon als Platzhalter statt eines leeren Feldes.
+                error = painterResource(R.drawable.ic_launcher_foreground)
+            )
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
