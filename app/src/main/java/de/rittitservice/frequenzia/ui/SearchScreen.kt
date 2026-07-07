@@ -1,6 +1,7 @@
 package de.rittitservice.frequenzia.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -109,6 +110,9 @@ fun StationRow(
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
+            // Tippen auf die Zeile (z. B. den Sendernamen) spielt den Sender
+            // ebenfalls ab und öffnet den Player – nicht nur der Play-Button.
+            .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
