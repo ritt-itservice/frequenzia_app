@@ -1,6 +1,7 @@
 <div align="center">
+<img src="docs/play-store/icon-512.png" alt="Frequenzia Icon" width="96">
 
-# 📻 Frequenzia
+# Frequenzia
 
 **Internetradio hören, ohne Kompromisse.**
 
@@ -13,6 +14,8 @@
 [![Keine Werbung](https://img.shields.io/badge/Werbung-nie-FF7A1E?style=flat-square)](#kostenlos--werbefrei--privat)
 
 [**⬇ Neueste Version herunterladen**](https://github.com/ritt-itservice/frequenzia_app/releases/latest)
+&nbsp;·&nbsp;
+[**▶ Google Play (geschlossener Test)**](https://play.google.com/store/apps/details?id=de.rittitservice.frequenzia)
 
 </div>
 
@@ -31,6 +34,15 @@
 </tr>
 </table>
 
+<table>
+<tr>
+<td width="100%"><img src="docs/play-store/screenshots-tablet/2-player.png" alt="Tablet-Layout" width="780"></td>
+</tr>
+<tr>
+<td align="center"><sub>Eigenes Tablet-Layout: Navigationsleiste + dauerhaftes Player-Panel statt hochskalierter Handy-Ansicht</sub></td>
+</tr>
+</table>
+
 ## Was Frequenzia macht
 
 - 🔍 **Sendersuche** nach Name, Land oder Genre/Tag – Ergebnisse aktualisieren sich automatisch während des Tippens
@@ -39,6 +51,8 @@
 - 🕓 **Verlauf** der zuletzt wirklich gehörten Sender
 - 🌐 Zugriff auf über 50.000 Sender weltweit via [Radio Browser API](https://www.radio-browser.info/)
 - 🎧 Unterstützt gängige Streaming-Formate (HTTP/Progressive, HLS)
+- 📱↔️📶 **Eigenes Tablet-Layout** (Navigationsleiste + Player-Panel) statt hochskalierter Handy-Ansicht
+- 🔁 Merkt sich kurze Netzwerk-Aussetzer automatisch mit Wiederholungsversuch, statt gleich aufzugeben
 
 ## Kostenlos, werbefrei, privat
 
@@ -74,7 +88,10 @@ Frequenzia finanziert sich nicht über Werbung oder Nutzerdaten – und wird es 
 
 ## Installation
 
-Die neueste signierte APK gibt es unter [**Releases**](https://github.com/ritt-itservice/frequenzia_app/releases/latest) zum direkten Download – kein Play Store nötig.
+| Weg | Status |
+|---|---|
+| [**GitHub Releases**](https://github.com/ritt-itservice/frequenzia_app/releases/latest) | Signierte APK, sofort für alle nutzbar |
+| [**Google Play**](https://play.google.com/store/apps/details?id=de.rittitservice.frequenzia) | Aktuell im geschlossenen Test – noch nicht öffentlich, aber schon unterwegs |
 
 Zum Selbstbauen:
 
