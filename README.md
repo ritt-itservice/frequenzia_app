@@ -103,4 +103,6 @@ gradle :app:assembleDebug
 
 ## Lizenz
 
-Veröffentlicht unter der [GNU General Public License v3.0](LICENSE) – frei nutzbar, veränderbar und weiterverbreitbar.
+Der **Quellcode** ist unter der [GNU General Public License v3.0](LICENSE) veröffentlicht – frei nutzbar, veränderbar und weiterverbreitbar.
+
+**Ausgenommen davon sind das Frequenzia-Logo/App-Icon, die Feature-Grafik und die Screenshots** (u. a. in `docs/`). Diese dürfen nur im Zusammenhang mit dem originalen Frequenzia-Projekt verwendet werden – nicht für eigene Forks, Rebranding oder andere Projekte.
