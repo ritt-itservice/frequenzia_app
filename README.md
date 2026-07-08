@@ -16,6 +16,8 @@
 [**⬇ Neueste Version herunterladen**](https://github.com/ritt-itservice/frequenzia_app/releases/latest)
 &nbsp;·&nbsp;
 [**▶ Google Play (geschlossener Test)**](https://play.google.com/store/apps/details?id=de.rittitservice.frequenzia)
+&nbsp;·&nbsp;
+[**🗺 Roadmap**](https://ritt-itservice.github.io/frequenzia_app/roadmap/)
 
 </div>
 
@@ -100,6 +102,14 @@ git clone https://github.com/ritt-itservice/frequenzia_app.git
 cd frequenzia_app
 gradle :app:assembleDebug
 ```
+
+## Roadmap
+
+Geplante nächste Features – Details und aktueller Stand auf der
+[**Roadmap-Seite**](https://ritt-itservice.github.io/frequenzia_app/roadmap/):
+
+- 🚗 **Android Auto Integration** *(Q3 2026)*
+- 🌐 **Mehrsprachigkeit** *(Q4 2026)*
 
 ## Lizenz
 
