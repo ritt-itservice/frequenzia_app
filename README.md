@@ -1,7 +1,9 @@
 <div align="center">
-<img src="docs/play-store/feature-graphic.png" alt="Frequenzia – Internetradio ohne Kompromisse" width="800">
+<img src="docs/play-store/icon-512.png" alt="Frequenzia Icon" width="96">
 
 # Frequenzia
+
+**Internetradio hören, ohne Kompromisse.**
 
 Über 50.000 Sender aus aller Welt entdecken und hören – schnell, werbefrei und ohne dass die App irgendetwas über dich wissen will.
 
