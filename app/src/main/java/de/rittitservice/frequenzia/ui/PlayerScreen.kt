@@ -2,6 +2,8 @@ package de.rittitservice.frequenzia.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -12,6 +14,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +49,11 @@ fun PlayerScreen(
                     )
                 )
             )
+            // Ohne eigenen Pointer-Input-Consumer sind Bereiche ohne Klick-
+            // Handler (z. B. neben dem Cover) für Compose beim Hit-Testing
+            // unsichtbar – Taps würden sonst zur darunterliegenden Senderliste
+            // durchgereicht und dort einen anderen Sender auswählen.
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
     ) {
         // Nicht die Geräte-Ausrichtung prüfen, sondern die tatsächlich
         // verfügbare Fläche: Im Tablet-Seitenpanel ist das Gerät oft im
