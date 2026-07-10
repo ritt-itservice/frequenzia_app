@@ -9,7 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,6 +41,10 @@ fun TabletApp(viewModel: StationViewModel) {
     val favorites by viewModel.favorites.collectAsStateWithLifecycle(initialValue = emptyList())
     val error by viewModel.error.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    // Panel lässt sich über den Zurück-Pfeil manuell wegklicken, ohne dass
+    // die Wiedergabe stoppt; beim Auswählen eines neuen Senders geht es
+    // automatisch wieder auf, analog zu isPlayerExpanded auf dem Handy.
+    var isPlayerPanelVisible by rememberSaveable { mutableStateOf(true) }
 
     LaunchedEffect(error) {
         error?.let {
@@ -76,8 +83,14 @@ fun TabletApp(viewModel: StationViewModel) {
                             isLoading = isLoading,
                             onSearch = { query -> viewModel.search(query) },
                             onLoadTop = { viewModel.loadTopStations() },
-                            onStationSelect = { viewModel.selectStation(it) },
-                            onStationPlay = { viewModel.playStation(it) },
+                            onStationSelect = {
+                                viewModel.selectStation(it)
+                                isPlayerPanelVisible = true
+                            },
+                            onStationPlay = {
+                                viewModel.playStation(it)
+                                isPlayerPanelVisible = true
+                            },
                             onFavoriteToggle = { viewModel.toggleFavorite(it) },
                             isFavorite = { it in favoriteIds }
                         )
@@ -85,8 +98,14 @@ fun TabletApp(viewModel: StationViewModel) {
                     composable(Screen.Favorites.route) {
                         FavoritesScreen(
                             favorites = favorites,
-                            onStationSelect = { viewModel.selectStation(it) },
-                            onStationPlay = { viewModel.playStation(it) },
+                            onStationSelect = {
+                                viewModel.selectStation(it)
+                                isPlayerPanelVisible = true
+                            },
+                            onStationPlay = {
+                                viewModel.playStation(it)
+                                isPlayerPanelVisible = true
+                            },
                             onFavoriteToggle = { viewModel.toggleFavorite(it) }
                         )
                     }
@@ -96,8 +115,14 @@ fun TabletApp(viewModel: StationViewModel) {
 
                         RecentlyPlayedScreen(
                             recentlyPlayed = recentlyPlayed,
-                            onStationSelect = { viewModel.selectStation(it) },
-                            onStationPlay = { viewModel.playStation(it) },
+                            onStationSelect = {
+                                viewModel.selectStation(it)
+                                isPlayerPanelVisible = true
+                            },
+                            onStationPlay = {
+                                viewModel.playStation(it)
+                                isPlayerPanelVisible = true
+                            },
                             onFavoriteToggle = { viewModel.toggleFavorite(it) },
                             isFavorite = { it in favoriteIds }
                         )
@@ -105,24 +130,26 @@ fun TabletApp(viewModel: StationViewModel) {
                 }
             }
 
-            currentStation?.let { station ->
-                val favoriteIds = favorites.map { it.stationuuid }.toSet()
-                Surface(
-                    modifier = Modifier
-                        .width(400.dp)
-                        .fillMaxHeight(),
-                    color = MaterialTheme.colorScheme.background,
-                    tonalElevation = 2.dp
-                ) {
-                    PlayerScreen(
-                        station = station,
-                        isPlaying = isCurrentStationPlaying,
-                        isFavorite = station.stationuuid in favoriteIds,
-                        onTogglePlayPause = { viewModel.togglePlayPause() },
-                        onFavoriteToggle = { viewModel.toggleFavorite(station) },
-                        onCollapse = {},
-                        showCollapseButton = false
-                    )
+            if (isPlayerPanelVisible) {
+                currentStation?.let { station ->
+                    val favoriteIds = favorites.map { it.stationuuid }.toSet()
+                    Surface(
+                        modifier = Modifier
+                            .width(400.dp)
+                            .fillMaxHeight(),
+                        color = MaterialTheme.colorScheme.background,
+                        tonalElevation = 2.dp
+                    ) {
+                        PlayerScreen(
+                            station = station,
+                            isPlaying = isCurrentStationPlaying,
+                            isFavorite = station.stationuuid in favoriteIds,
+                            onTogglePlayPause = { viewModel.togglePlayPause() },
+                            onFavoriteToggle = { viewModel.toggleFavorite(station) },
+                            onCollapse = { isPlayerPanelVisible = false },
+                            showCollapseButton = true
+                        )
+                    }
                 }
             }
         }

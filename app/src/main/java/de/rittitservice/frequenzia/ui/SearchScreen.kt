@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,10 +75,6 @@ fun SearchScreen(
             )
         )
 
-        if (isLoading) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-        }
-
         Text(
             text = if (query.isBlank()) "Beliebte Sender" else "Ergebnisse",
             style = MaterialTheme.typography.titleMedium,
@@ -85,15 +82,25 @@ fun SearchScreen(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(stations, key = { it.stationuuid }) { station ->
-                StationRow(
-                    station = station,
-                    isFavorite = isFavorite(station.stationuuid),
-                    onSelect = { onStationSelect(station) },
-                    onPlay = { onStationPlay(station) },
-                    onFavoriteToggle = { onFavoriteToggle(station) }
-                )
+        // Nach unten ziehen lädt die aktuelle Liste (Beliebte Sender oder
+        // Suchergebnisse) neu – der Indikator ersetzt die vorherige
+        // LinearProgressIndicator, die bei jedem Ladevorgang (auch beim
+        // Tippen) ohnehin schon dieselbe Information zeigte.
+        PullToRefreshBox(
+            isRefreshing = isLoading,
+            onRefresh = { if (query.isBlank()) onLoadTop() else onSearch(query) },
+            modifier = Modifier.weight(1f)
+        ) {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(stations, key = { it.stationuuid }) { station ->
+                    StationRow(
+                        station = station,
+                        isFavorite = isFavorite(station.stationuuid),
+                        onSelect = { onStationSelect(station) },
+                        onPlay = { onStationPlay(station) },
+                        onFavoriteToggle = { onFavoriteToggle(station) }
+                    )
+                }
             }
         }
     }
