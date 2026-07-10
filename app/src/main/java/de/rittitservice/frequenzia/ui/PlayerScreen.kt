@@ -5,7 +5,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Pause
@@ -20,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -153,12 +156,23 @@ private fun StationInfo(station: RadioStation, textAlign: TextAlign) {
         modifier = Modifier.fillMaxWidth()
     )
     Spacer(modifier = Modifier.height(4.dp))
+
+    // Land/Tags können bei manchen Sendern sehr lang werden (viele Tags).
+    // Statt den Player dadurch unbegrenzt in die Höhe zu schieben, wird die
+    // Beschreibung auf 3 Zeilen begrenzt und bei Bedarf scrollbar.
+    val descriptionStyle = MaterialTheme.typography.bodyMedium
+    val density = LocalDensity.current
+    val maxDescriptionHeight = with(density) { (descriptionStyle.lineHeight.toPx() * 3).toDp() }
+
     Text(
         text = listOfNotNull(station.country, station.tags).joinToString(" · "),
-        style = MaterialTheme.typography.bodyMedium,
+        style = descriptionStyle,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = textAlign,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = maxDescriptionHeight)
+            .verticalScroll(rememberScrollState())
     )
 }
 
