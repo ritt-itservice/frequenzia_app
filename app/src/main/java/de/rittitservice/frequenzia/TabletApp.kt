@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import de.rittitservice.frequenzia.ui.FavoritesScreen
+import de.rittitservice.frequenzia.ui.MiniPlayer
 import de.rittitservice.frequenzia.ui.PlayerScreen
 import de.rittitservice.frequenzia.ui.RecentlyPlayedScreen
 import de.rittitservice.frequenzia.ui.SearchScreen
@@ -68,63 +69,79 @@ fun TabletApp(viewModel: StationViewModel) {
         ) {
             TabletNavigationRail(navController)
 
-            Box(modifier = Modifier.weight(1f)) {
-                NavHost(
-                    navController = navController,
-                    startDestination = Screen.Search.route
-                ) {
-                    composable(Screen.Search.route) {
-                        val stations by viewModel.searchResults.collectAsStateWithLifecycle()
-                        val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-                        val favoriteIds = favorites.map { it.stationuuid }.toSet()
+            Column(modifier = Modifier.weight(1f)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    NavHost(
+                        navController = navController,
+                        startDestination = Screen.Search.route
+                    ) {
+                        composable(Screen.Search.route) {
+                            val stations by viewModel.searchResults.collectAsStateWithLifecycle()
+                            val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+                            val favoriteIds = favorites.map { it.stationuuid }.toSet()
 
-                        SearchScreen(
-                            stations = stations,
-                            isLoading = isLoading,
-                            onSearch = { query -> viewModel.search(query) },
-                            onLoadTop = { viewModel.loadTopStations() },
-                            onStationSelect = {
-                                viewModel.selectStation(it)
-                                isPlayerPanelVisible = true
-                            },
-                            onStationPlay = {
-                                viewModel.playStation(it)
-                                isPlayerPanelVisible = true
-                            },
-                            onFavoriteToggle = { viewModel.toggleFavorite(it) },
-                            isFavorite = { it in favoriteIds }
-                        )
-                    }
-                    composable(Screen.Favorites.route) {
-                        FavoritesScreen(
-                            favorites = favorites,
-                            onStationSelect = {
-                                viewModel.selectStation(it)
-                                isPlayerPanelVisible = true
-                            },
-                            onStationPlay = {
-                                viewModel.playStation(it)
-                                isPlayerPanelVisible = true
-                            },
-                            onFavoriteToggle = { viewModel.toggleFavorite(it) }
-                        )
-                    }
-                    composable(Screen.RecentlyPlayed.route) {
-                        val recentlyPlayed by viewModel.recentlyPlayed.collectAsStateWithLifecycle(initialValue = emptyList())
-                        val favoriteIds = favorites.map { it.stationuuid }.toSet()
+                            SearchScreen(
+                                stations = stations,
+                                isLoading = isLoading,
+                                onSearch = { query -> viewModel.search(query) },
+                                onLoadTop = { viewModel.loadTopStations() },
+                                onStationSelect = {
+                                    viewModel.selectStation(it)
+                                    isPlayerPanelVisible = true
+                                },
+                                onStationPlay = {
+                                    viewModel.playStation(it)
+                                    isPlayerPanelVisible = true
+                                },
+                                onFavoriteToggle = { viewModel.toggleFavorite(it) },
+                                isFavorite = { it in favoriteIds }
+                            )
+                        }
+                        composable(Screen.Favorites.route) {
+                            FavoritesScreen(
+                                favorites = favorites,
+                                onStationSelect = {
+                                    viewModel.selectStation(it)
+                                    isPlayerPanelVisible = true
+                                },
+                                onStationPlay = {
+                                    viewModel.playStation(it)
+                                    isPlayerPanelVisible = true
+                                },
+                                onFavoriteToggle = { viewModel.toggleFavorite(it) }
+                            )
+                        }
+                        composable(Screen.RecentlyPlayed.route) {
+                            val recentlyPlayed by viewModel.recentlyPlayed.collectAsStateWithLifecycle(initialValue = emptyList())
+                            val favoriteIds = favorites.map { it.stationuuid }.toSet()
 
-                        RecentlyPlayedScreen(
-                            recentlyPlayed = recentlyPlayed,
-                            onStationSelect = {
-                                viewModel.selectStation(it)
-                                isPlayerPanelVisible = true
-                            },
-                            onStationPlay = {
-                                viewModel.playStation(it)
-                                isPlayerPanelVisible = true
-                            },
-                            onFavoriteToggle = { viewModel.toggleFavorite(it) },
-                            isFavorite = { it in favoriteIds }
+                            RecentlyPlayedScreen(
+                                recentlyPlayed = recentlyPlayed,
+                                onStationSelect = {
+                                    viewModel.selectStation(it)
+                                    isPlayerPanelVisible = true
+                                },
+                                onStationPlay = {
+                                    viewModel.playStation(it)
+                                    isPlayerPanelVisible = true
+                                },
+                                onFavoriteToggle = { viewModel.toggleFavorite(it) },
+                                isFavorite = { it in favoriteIds }
+                            )
+                        }
+                    }
+                }
+
+                // Panel manuell weggeklickt, aber ein Sender läuft noch –
+                // MiniPlayer zeigt weiterhin, was spielt (wie auf dem Handy),
+                // Tippen öffnet das Panel wieder auf.
+                if (!isPlayerPanelVisible) {
+                    currentStation?.let { station ->
+                        MiniPlayer(
+                            station = station,
+                            isPlaying = isCurrentStationPlaying,
+                            onTogglePlayPause = { viewModel.togglePlayPause() },
+                            onExpand = { isPlayerPanelVisible = true }
                         )
                     }
                 }
