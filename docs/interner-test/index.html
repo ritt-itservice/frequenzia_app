@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Interner Testbericht – Frequenzia 1.6.1</title>
+<title>Interner Testbericht – Frequenzia 1.7.0</title>
 <style>
   :root {
     color-scheme: light dark;
@@ -130,16 +130,16 @@
 <body>
 
 <span class="badge">INTERNER QA-BERICHT</span>
-<h1>Testbericht — Frequenzia 1.6.1</h1>
-<p class="subtitle">Manueller Durchlauf auf <b>Pixel 8</b> (Handy) und <b>Pixel Tablet</b> (Emulator, Android 16) · frischer App-Zustand · 14. Juli 2026</p>
+<h1>Testbericht — Frequenzia 1.7.0</h1>
+<p class="subtitle">Manueller Durchlauf auf <b>Pixel 8</b> (Handy) und <b>Pixel Tablet</b> (Emulator, Android 16) · frischer App-Zustand · 14. Juli 2026 · zweiter Durchlauf nach Einführung des Info-Bildschirms</p>
 
 <div class="summary">
   <div class="summary-cell pass">
-    <div class="summary-num">17</div>
+    <div class="summary-num">21</div>
     <div class="summary-label">Bestanden</div>
   </div>
   <div class="summary-cell note">
-    <div class="summary-num">2</div>
+    <div class="summary-num">1</div>
     <div class="summary-label">Mit Hinweis</div>
   </div>
   <div class="summary-cell skip">
@@ -230,6 +230,50 @@
   <p class="detail">Layout ist bewusst orientierungsunabhängig (Navigationsleiste + Panel funktionieren identisch in beiden Ausrichtungen) — im Emulator ließ sich die native Hochformat-Ausrichtung des Pixel-Tablet-Bildes nicht erzwingen, um das gegenzuprüfen. Auf einem echten Tablet einmal gegenprüfen, falls Hochformat-Nutzung erwartet wird.</p>
 </div>
 
+<h2>Neu: Info-Bildschirm</h2>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Info-Tab in Navigation (Handy + Tablet)</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Erscheint korrekt als 4. Punkt in der Bottom-Bar (Handy) bzw. Navigationsleiste (Tablet), inklusive Querformat mit vier Icons.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Versionsanzeige</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Wird zur Laufzeit aus dem installierten Paket gelesen (nicht hart codiert) – nach dem Versionsbump auf 1.7.0 korrekt automatisch aktualisiert, ohne Codeänderung an der Anzeige selbst.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">"App bewerten"</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Öffnet den Play Store direkt über die <code>market://</code>-URI; auf dem Test-Emulator ohne angemeldetes Konto erscheint korrekt der Google-Sign-in-Screen statt eines Absturzes.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">"Quellcode"</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Öffnet den Browser direkt auf das GitHub-Repository.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">"Lizenz" und "Autor"</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Nutzen denselben verifizierten Öffnen-Mechanismus wie "Quellcode" (Lizenz verlinkt zur LICENSE-Datei auf GitHub, Autor öffnet eine E-Mail).</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">MiniPlayer bleibt sichtbar bei aktivem Info-Tab</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Sowohl auf dem Handy (Bottom-Bar) als auch auf dem Tablet (unterhalb der Liste) läuft die Wiedergabe unterbrechungsfrei weiter, während der Info-Bildschirm angezeigt wird.</p>
+</div>
+
+<h2>Regressionstest bestehender Funktionen</h2>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Suche, Vorschau/Play, Favorisieren, Verlauf</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Nach Hinzufügen des vierten Tabs erneut auf frischem Zustand geprüft – keine Regression durch die zusätzliche Navigationsleisten-Spalte.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Klick-Through-Fix, 3-zeilige Beschreibung, Querformat</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Alle drei zuvor behobenen Player-Probleme erneut bestätigt, unverändert stabil.</p>
+</div>
+
 <h2>Hintergrundwiedergabe</h2>
 
 <div class="item">
@@ -255,7 +299,8 @@
 </ul>
 
 <div class="foot">
-  Getestete Version: <b>1.6.1</b> (versionCode 12) · Build aus Commit <code>92dc3c3</code> · Debug-Build, frisch installiert (<code>pm clear</code>) vor jedem Durchlauf · <a href="https://github.com/ritt-itservice/frequenzia_app">Quellcode auf GitHub</a>
+  Getestete Version: <b>1.7.0</b> (versionCode 13) · Build aus Commit <code>ad62a78</code> · Debug-Build, frisch installiert (<code>pm clear</code>) vor jedem Durchlauf · <a href="https://github.com/ritt-itservice/frequenzia_app">Quellcode auf GitHub</a>
+
 </div>
 
 </body>
