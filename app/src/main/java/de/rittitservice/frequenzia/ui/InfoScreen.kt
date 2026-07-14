@@ -111,7 +111,7 @@ fun InfoScreen() {
             InfoRow(
                 icon = Icons.Default.Person,
                 title = "Autor",
-                subtitle = "Eduard Ritt · Ritt IT-Service",
+                subtitle = "Eduard Ritt",
                 onClick = { openUrl(context, AUTHOR_MAIL) }
             )
         }
