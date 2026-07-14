@@ -111,6 +111,10 @@ Geplante nächste Features – Details und aktueller Stand auf der
 - 🚗 **Android Auto Integration** *(Q3 2026)*
 - 🌐 **Mehrsprachigkeit** *(Q4 2026)*
 
+## Qualitätssicherung
+
+Vor jedem Release wird die App manuell auf Handy- und Tablet-Emulator durchgetestet (Kernfunktionen, Player, Netzwerk-Resilienz, Hell-/Dunkelmodus). Ergebnis des letzten Durchlaufs: **[Interner Testbericht 1.6.1](https://ritt-itservice.github.io/frequenzia_app/interner-test/)**.
+
 ## Lizenz
 
 Der **Quellcode** ist unter der [GNU General Public License v3.0](LICENSE) veröffentlicht – frei nutzbar, veränderbar und weiterverbreitbar.

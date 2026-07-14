@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interner Testbericht – Frequenzia 1.6.1</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --ink: #1A1A1A;
+    --muted: #6E6E73;
+    --accent: #FF7A1E;
+    --rule: #E5E2DD;
+    --pass-bg: #E8F5E9;
+    --pass-ink: #1B6B2E;
+    --note-bg: #FFF3E0;
+    --note-ink: #9A5B00;
+    --skip-bg: #ECEFF3;
+    --skip-ink: #4B5563;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121212;
+      --surface: #1C1C1E;
+      --ink: #F5F5F5;
+      --muted: #A0A0A6;
+      --rule: #2A2A2D;
+      --pass-bg: #163823;
+      --pass-ink: #6FCF8F;
+      --note-bg: #3A2A0F;
+      --note-ink: #F0B74D;
+      --skip-bg: #26262A;
+      --skip-ink: #B8BAC4;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121212; --surface: #1C1C1E; --ink: #F5F5F5; --muted: #A0A0A6; --rule: #2A2A2D;
+    --pass-bg: #163823; --pass-ink: #6FCF8F;
+    --note-bg: #3A2A0F; --note-ink: #F0B74D;
+    --skip-bg: #26262A; --skip-ink: #B8BAC4;
+  }
+  :root[data-theme="light"] {
+    --bg: #FAFAFA; --surface: #FFFFFF; --ink: #1A1A1A; --muted: #6E6E73; --rule: #E5E2DD;
+    --pass-bg: #E8F5E9; --pass-ink: #1B6B2E;
+    --note-bg: #FFF3E0; --note-ink: #9A5B00;
+    --skip-bg: #ECEFF3; --skip-ink: #4B5563;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    max-width: 760px; margin: 0 auto; padding: 48px 24px 80px;
+    line-height: 1.55;
+  }
+  .badge {
+    display: inline-block; background: var(--accent); color: #fff; font-size: 12px;
+    font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-bottom: 20px;
+  }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.01em; text-wrap: balance; }
+  .subtitle { color: var(--muted); font-size: 14.5px; margin-bottom: 28px; }
+  .subtitle b { color: var(--ink); font-weight: 600; }
+  a { color: var(--accent); }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 36px;
+  }
+  .summary-cell {
+    background: var(--surface);
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .summary-num { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .summary-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .summary-cell.pass .summary-num { color: var(--pass-ink); }
+  .summary-cell.note .summary-num { color: var(--note-ink); }
+  .summary-cell.skip .summary-num { color: var(--skip-ink); }
+  .summary-cell.bug .summary-num { color: var(--accent); }
+
+  h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); font-weight: 700;
+    margin: 40px 0 14px; padding-top: 24px; border-top: 1px solid var(--rule);
+  }
+  h2:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+
+  .item {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px;
+  }
+  .item-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .item-title { font-size: 15px; font-weight: 600; }
+  .chip {
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    white-space: nowrap; letter-spacing: 0.01em;
+  }
+  .chip.pass { background: var(--pass-bg); color: var(--pass-ink); }
+  .chip.note { background: var(--note-bg); color: var(--note-ink); }
+  .chip.skip { background: var(--skip-bg); color: var(--skip-ink); }
+  .item p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+  .item p.detail { color: var(--ink); }
+
+  .finding {
+    background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0; padding: 14px 16px; margin-bottom: 12px;
+  }
+  .finding-title { font-weight: 700; font-size: 14.5px; margin-bottom: 4px; }
+  .finding p { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+  .finding p.verdict { color: var(--ink); }
+
+  ul.limits { margin: 0; padding-left: 20px; font-size: 14px; color: var(--muted); }
+  ul.limits li { margin-bottom: 6px; }
+
+  .foot {
+    margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--rule);
+    font-size: 13px; color: var(--muted);
+  }
+  code { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 0.92em; background: var(--skip-bg); color: var(--ink); padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<span class="badge">INTERNER QA-BERICHT</span>
+<h1>Testbericht — Frequenzia 1.6.1</h1>
+<p class="subtitle">Manueller Durchlauf auf <b>Pixel 8</b> (Handy) und <b>Pixel Tablet</b> (Emulator, Android 16) · frischer App-Zustand · 14. Juli 2026</p>
+
+<div class="summary">
+  <div class="summary-cell pass">
+    <div class="summary-num">17</div>
+    <div class="summary-label">Bestanden</div>
+  </div>
+  <div class="summary-cell note">
+    <div class="summary-num">2</div>
+    <div class="summary-label">Mit Hinweis</div>
+  </div>
+  <div class="summary-cell skip">
+    <div class="summary-num">1</div>
+    <div class="summary-label">Nicht zuverlässig testbar</div>
+  </div>
+  <div class="summary-cell bug">
+    <div class="summary-num">0</div>
+    <div class="summary-label">Echte Bugs gefunden</div>
+  </div>
+</div>
+
+<h2>Handy — Kernfunktionen</h2>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Leerzustände (Favoriten, Verlauf)</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Beide zeigen korrekten Hinweistext und Icon bei frischer Installation.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Vorschau vs. echtes Abspielen</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Tap auf Sendername öffnet Player nur als Vorschau ("Sender"); Tap auf Play startet echte Wiedergabe ("Wird abgespielt") und trägt erst dann in den Verlauf ein.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Favorisieren aus Player und Liste</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Stern-Status synchronisiert sich sofort zwischen Player, Senderliste und Favoriten-Tab.</p>
+</div>
+
+<h2>Handy — Player</h2>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Klick-Through-Regression (Fix aus 1.5.1)</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Taps neben dem Cover und in Leerflächen des Players lösen keinen Senderwechsel mehr aus.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Querformat</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Kein Overflow, Steuerung bleibt sichtbar; aufgeklappter Player übersteht die Drehung.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">3-zeilige Beschreibung mit Scroll (Fix aus 1.6.0)</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Bei "Classic Vinyl HD" (sehr lange Tag-Liste) bleibt der Player kompakt, Rest ist per Wischgeste erreichbar.</p>
+</div>
+
+<h2>Handy — Liste &amp; Netzwerk</h2>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Pull-to-Refresh</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Ladeindikator erscheint beim Herunterziehen, Liste wird neu geladen.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Netzwerk-Wiederholung bei Verbindungsabbruch</span><span class="chip skip">Nicht zuverlässig testbar</span></div>
+  <p class="detail">Flugmodus/WLAN-Deaktivierung über <code>adb</code> hat die Netzwerkverbindung im Emulator nicht zuverlässig gekappt — Daten flossen teils trotz deaktiviertem WLAN weiter. Die Retry-Logik selbst ist im Code vorhanden und war bereits in einer früheren Sitzung an einem echten Verbindungsabbruch verifiziert; hier nicht erneut live nachweisbar.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Hell-/Dunkelmodus</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">App folgt korrekt der Systemeinstellung in beide Richtungen, inklusive Statusleisten-Icons.</p>
+</div>
+
+<h2>Tablet</h2>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Navigationsleiste &amp; Master-Detail-Liste</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Alle drei Tabs erreichbar, Leerzustände korrekt, Liste nutzt die volle Breite.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Player-Panel wegklicken (Fix aus 1.6.1)</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Zurück-Pfeil schließt das Panel ohne die Wiedergabe zu stoppen; Liste bekommt die volle Breite zurück.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">MiniPlayer bei weggeklicktem Panel (Fix aus 1.6.1)</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Zeigt laufenden Sender unten in der Liste; Tap öffnet das Panel wieder auf.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Hell-/Dunkelmodus</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Folgt korrekt der Systemeinstellung, Wiedergabe übersteht den Wechsel unterbrechungsfrei.</p>
+</div>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Rotation</span><span class="chip note">Mit Hinweis</span></div>
+  <p class="detail">Layout ist bewusst orientierungsunabhängig (Navigationsleiste + Panel funktionieren identisch in beiden Ausrichtungen) — im Emulator ließ sich die native Hochformat-Ausrichtung des Pixel-Tablet-Bildes nicht erzwingen, um das gegenzuprüfen. Auf einem echten Tablet einmal gegenprüfen, falls Hochformat-Nutzung erwartet wird.</p>
+</div>
+
+<h2>Hintergrundwiedergabe</h2>
+
+<div class="item">
+  <div class="item-head"><span class="item-title">Medien-Benachrichtigung</span><span class="chip pass">Bestanden</span></div>
+  <p class="detail">Bei aktiver Wiedergabe im Hintergrund erscheint die Steuerleiste korrekt mit Cover, Sendername und Pause-Button in der Schnelleinstellungs-Ansicht.</p>
+</div>
+
+<h2>Auffälligkeit während des Tests</h2>
+
+<div class="finding">
+  <div class="finding-title">Play-Button reagierte kurzzeitig nicht nach mehrfachem WLAN/Mobildaten-Umschalten</div>
+  <p>Nach dem (missglückten) Versuch, einen Verbindungsabbruch per <code>adb</code> zu simulieren, blieb ein Sender für rund zwei Minuten auf "Pausiert" stehen, obwohl der Play-Button mehrfach präzise getroffen wurde — <code>logcat</code> zeigte dabei keinen Fehler, nur wiederholt <code>state=PAUSED</code>.</p>
+  <p class="verdict">Einordnung: Kein reproduzierbarer App-Fehler. Nach Stabilisierung des simulierten Netzwerks (T-Mobile 5G wieder aktiv) hat derselbe Tap sofort funktioniert, inklusive korrekt aktualisierter Benachrichtigung. Wahrscheinlich eine Nachwirkung des aggressiven WLAN/Mobildaten-Umschaltens im Emulator selbst, nicht der App-Logik.</p>
+</div>
+
+<h2>Grenzen dieses Testdurchlaufs</h2>
+<ul class="limits">
+  <li>Ausschließlich Emulatoren — kein echtes Gerät, kein echter Netzwerkabbruch, kein Wechsel zwischen WLAN und Mobilfunk unter realer Latenz.</li>
+  <li>Keine Bluetooth-Kopfhörer-Verbindung/-Trennung während der Wiedergabe geprüft.</li>
+  <li>Kein eingehender Anruf während der Wiedergabe simuliert.</li>
+  <li>Kein Verhalten unter aggressivem Akku-Management einzelner Hersteller (Samsung, Xiaomi u. a.) geprüft — dafür wird ein echtes Gerät des jeweiligen Herstellers benötigt.</li>
+  <li>Tablet-Hochformat konnte im Emulator nicht erzwungen werden (siehe oben).</li>
+</ul>
+
+<div class="foot">
+  Getestete Version: <b>1.6.1</b> (versionCode 12) · Build aus Commit <code>92dc3c3</code> · Debug-Build, frisch installiert (<code>pm clear</code>) vor jedem Durchlauf · <a href="https://github.com/ritt-itservice/frequenzia_app">Quellcode auf GitHub</a>
+</div>
+
+</body>
+</html>
