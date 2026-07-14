@@ -3,6 +3,7 @@ package de.rittitservice.frequenzia
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -23,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import de.rittitservice.frequenzia.ui.FavoritesScreen
+import de.rittitservice.frequenzia.ui.InfoScreen
 import de.rittitservice.frequenzia.ui.MiniPlayer
 import de.rittitservice.frequenzia.ui.PlayerScreen
 import de.rittitservice.frequenzia.ui.RecentlyPlayedScreen
@@ -129,6 +131,9 @@ fun TabletApp(viewModel: StationViewModel) {
                                 isFavorite = { it in favoriteIds }
                             )
                         }
+                        composable(Screen.Info.route) {
+                            InfoScreen()
+                        }
                     }
                 }
 
@@ -175,7 +180,7 @@ fun TabletApp(viewModel: StationViewModel) {
 
 @Composable
 private fun TabletNavigationRail(navController: NavHostController) {
-    val items = listOf(Screen.Search, Screen.Favorites, Screen.RecentlyPlayed)
+    val items = listOf(Screen.Search, Screen.Favorites, Screen.RecentlyPlayed, Screen.Info)
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
@@ -192,6 +197,7 @@ private fun TabletNavigationRail(navController: NavHostController) {
                 is Screen.Search -> Icons.Default.Search
                 is Screen.Favorites -> Icons.Default.Star
                 is Screen.RecentlyPlayed -> Icons.Default.History
+                is Screen.Info -> Icons.Default.Info
             }
             NavigationRailItem(
                 selected = selected,
