@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entwurf – Favoriten mit Suche &amp; Alphabet-Gruppierung – Frequenzia</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --page-bg: #EEEBE5;
+    --page-ink: #1A1A1A;
+    --page-muted: #746F67;
+    --page-rule: #DDD8CF;
+
+    --accent: #FF7A1E;
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-variant: #F0EFEF;
+    --ink: #1A1A1A;
+    --muted: #6E6E73;
+    --bezel: #1C1C1E;
+    --bezel-highlight: #38383B;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #171614;
+      --page-ink: #F1EFEA;
+      --page-muted: #9C968C;
+      --page-rule: #2D2A25;
+
+      --bg: #121212;
+      --surface: #1C1C1E;
+      --surface-variant: #2A2A2D;
+      --ink: #F5F5F5;
+      --muted: #9B9BA1;
+      --bezel: #050505;
+      --bezel-highlight: #232325;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #171614; --page-ink: #F1EFEA; --page-muted: #9C968C; --page-rule: #2D2A25;
+    --bg: #121212; --surface: #1C1C1E; --surface-variant: #2A2A2D; --ink: #F5F5F5; --muted: #9B9BA1;
+    --bezel: #050505; --bezel-highlight: #232325;
+  }
+  :root[data-theme="light"] {
+    --page-bg: #EEEBE5; --page-ink: #1A1A1A; --page-muted: #746F67; --page-rule: #DDD8CF;
+    --bg: #FAFAFA; --surface: #FFFFFF; --surface-variant: #F0EFEF; --ink: #1A1A1A; --muted: #6E6E73;
+    --bezel: #1C1C1E; --bezel-highlight: #38383B;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--page-bg); color: var(--page-ink);
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    padding: 40px 20px 64px;
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; }
+
+  .badge {
+    display: inline-block; background: var(--accent); color: #fff; font-size: 12px;
+    font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-bottom: 20px;
+  }
+
+  header.page { margin-bottom: 36px; max-width: 640px; }
+  .eyebrow {
+    display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+  }
+  h1 { font-size: 25px; margin: 0 0 8px; letter-spacing: -0.01em; text-wrap: balance; }
+  header.page p { margin: 0; color: var(--page-muted); font-size: 14.5px; line-height: 1.55; }
+  a { color: var(--accent); }
+
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(280px, 320px) 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .stage { grid-template-columns: 1fr; justify-items: center; }
+  }
+
+  /* ---------- Phone mockup ---------- */
+  .phone {
+    width: 300px;
+    background: linear-gradient(155deg, var(--bezel-highlight), var(--bezel));
+    border-radius: 42px;
+    padding: 12px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,0.45),
+      0 2px 0 rgba(255,255,255,0.04) inset;
+  }
+  .screen {
+    position: relative;
+    background: var(--bg);
+    border-radius: 32px;
+    overflow: hidden;
+    height: 638px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .statusbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px 2px;
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .statusbar .icons { display: flex; align-items: center; gap: 5px; }
+
+  .searchfield {
+    margin: 10px 16px 8px;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface-variant);
+    border-radius: 999px;
+    padding: 10px 14px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .searchfield svg { flex: none; opacity: 0.8; }
+
+  .section-sticky {
+    margin: 2px 16px 4px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+  .section-sticky .pin {
+    width: 20px; height: 20px; border-radius: 6px;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+  }
+
+  .list {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    padding: 0 16px;
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 88%, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 0%, black 88%, transparent 100%);
+  }
+  .letter-header {
+    font-size: 11.5px; font-weight: 800; color: var(--accent);
+    letter-spacing: 0.03em;
+    padding: 10px 4px 4px;
+  }
+  .row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface-variant);
+    border-radius: 14px;
+    padding: 7px 8px;
+    margin-bottom: 6px;
+  }
+  .row .icon {
+    width: 40px; height: 40px; border-radius: 10px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; font-weight: 800; letter-spacing: -0.02em;
+  }
+  .row .meta { min-width: 0; flex: 1; }
+  .row .name {
+    font-size: 13.5px; font-weight: 700; color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .row .sub {
+    font-size: 11.5px; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .row .star { flex: none; color: var(--accent); opacity: 0.9; }
+  .row .play {
+    flex: none; width: 26px; height: 26px; border-radius: 999px;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .index-rail {
+    position: absolute;
+    right: 2px; top: 108px; bottom: 78px;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    width: 14px; padding: 6px 0;
+  }
+  .index-rail span {
+    font-size: 8px; font-weight: 700; color: var(--muted); opacity: 0.35; line-height: 1;
+  }
+  .index-rail span.has { opacity: 1; color: var(--accent); }
+
+  .navbar {
+    margin: 8px 14px 12px;
+    background: var(--surface-variant);
+    border-radius: 999px;
+    display: flex; align-items: center; justify-content: space-evenly;
+    padding: 8px 6px;
+  }
+  .navbar .item {
+    width: 34px; height: 34px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+  }
+  .navbar .item.active { background: var(--accent); color: #fff; }
+
+  /* ---------- Annotations ---------- */
+  .notes { padding-top: 4px; }
+  .notes h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--page-muted); font-weight: 700; margin: 0 0 16px;
+  }
+  .note {
+    display: flex; gap: 14px;
+    padding: 16px 0;
+    border-top: 1px solid var(--page-rule);
+  }
+  .note:first-of-type { border-top: none; padding-top: 0; }
+  .note .num {
+    flex: none; width: 26px; height: 26px; border-radius: 8px;
+    background: var(--surface); color: var(--accent);
+    border: 1px solid var(--page-rule);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+  }
+  .note h3 { margin: 0 0 4px; font-size: 15px; color: var(--page-ink); }
+  .note p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--page-muted); max-width: 46ch; }
+  .note .flag {
+    display: inline-block; margin-left: 8px; font-size: 10.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent);
+    background: rgba(255,122,30,0.14);
+    padding: 2px 8px; border-radius: 999px; vertical-align: 2px;
+  }
+
+  .foot {
+    margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--page-rule);
+    font-size: 13px; color: var(--page-muted); max-width: 640px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="badge">ENTWURF · GEPLANT FÜR Q3 2026</span>
+
+  <header class="page">
+    <span class="eyebrow">Design-Entwurf · Favoriten-Screen</span>
+    <h1>Suche + Alphabet-Gruppierung statt einer langen, unsortierten Liste</h1>
+    <p>Gleicher Bausatz wie im Rest der App (Suchfeld, Sender-Zeile, Navigationsleiste) &mdash; neu ist die Struktur: Buchstaben-Abschnitte, ein fixierter Abschnitts-Header beim Scrollen und ein optionaler A–Z-Schnellzugriff am Rand.</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- PHONE MOCKUP -->
+    <div class="phone">
+      <div class="screen">
+
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="icons">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="none"><rect x="0" y="7" width="3" height="4" rx="0.5" fill="currentColor"/><rect x="4.5" y="5" width="3" height="6" rx="0.5" fill="currentColor"/><rect x="9" y="3" width="3" height="8" rx="0.5" fill="currentColor"/><rect x="13" y="0" width="3" height="11" rx="0.5" fill="currentColor"/></svg>
+            <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M7.5 10.3 5.6 8.4a2.7 2.7 0 0 1 3.8 0L7.5 10.3Z" fill="currentColor"/><path d="M7.5 6.6a5 5 0 0 1 3.6 1.5l1.3-1.3a6.9 6.9 0 0 0-9.8 0l1.3 1.3a5 5 0 0 1 3.6-1.5Z" fill="currentColor" opacity="0.55"/><path d="M7.5 3a8.6 8.6 0 0 1 6.1 2.5l1.3-1.3a10.5 10.5 0 0 0-14.8 0L1.4 5.5A8.6 8.6 0 0 1 7.5 3Z" fill="currentColor" opacity="0.3"/></svg>
+            <svg width="23" height="11" viewBox="0 0 23 11" fill="none"><rect x="0.5" y="0.5" width="19" height="10" rx="2.5" stroke="currentColor"/><rect x="2" y="2" width="16" height="7" rx="1.3" fill="currentColor"/><rect x="20.5" y="3.5" width="2" height="4" rx="1" fill="currentColor"/></svg>
+          </span>
+        </div>
+
+        <div class="searchfield">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          Favoriten durchsuchen &hellip;
+        </div>
+
+        <div class="section-sticky"><span class="pin">R</span> RTL &nbsp;&middot;&nbsp; RMC &nbsp;&middot;&nbsp; RMC FR &nbsp;&middot;&nbsp; Radio Paradise &hellip;</div>
+
+        <div class="list">
+          <div class="index-rail">
+            <span class="has">#</span><span>A</span><span>B</span><span class="has">C</span><span>D</span>
+            <span class="has">E</span><span class="has">F</span><span>G</span><span>H</span><span>I</span>
+            <span class="has">J</span><span>K</span><span>L</span><span class="has">M</span><span>N</span>
+            <span class="has">O</span><span>P</span><span>Q</span><span class="has">R</span><span class="has">S</span>
+            <span class="has">T</span><span>U</span><span class="has">V</span><span class="has">W</span><span>X</span><span>Y</span><span>Z</span>
+          </div>
+
+          <div class="letter-header">#</div>
+          <div class="row">
+            <div class="icon" style="background:#111">102</div>
+            <div class="meta"><div class="name">102.7 KIIS FM</div><div class="sub">USA · Pop, Top 40</div></div>
+            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2z"/></svg>
+            <div class="play"><svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+          <div class="row">
+            <div class="icon" style="background:#1AA6A0">80s</div>
+            <div class="meta"><div class="name">80s80s Radio</div><div class="sub">Germany · 80s, New Wave</div></div>
+            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2z"/></svg>
+            <div class="play"><svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+
+          <div class="letter-header">C</div>
+          <div class="row">
+            <div class="icon" style="background:#1E4FBF">CAP</div>
+            <div class="meta"><div class="name">CAPITAL – UK's No.1 Hits</div><div class="sub">UK · Pop</div></div>
+            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2z"/></svg>
+            <div class="play"><svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+          <div class="row">
+            <div class="icon" style="background:#C41E1E">CV</div>
+            <div class="meta"><div class="name">Classic Vinyl HD</div><div class="sub">USA · Jazz, Oldies</div></div>
+            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2z"/></svg>
+            <div class="play"><svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+
+          <div class="letter-header">E</div>
+          <div class="row">
+            <div class="icon" style="background:#E8720C">E1</div>
+            <div class="meta"><div class="name">Europe 1</div><div class="sub">France · News, Talk</div></div>
+            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2z"/></svg>
+            <div class="play"><svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+
+          <div class="letter-header">F</div>
+          <div class="row">
+            <div class="icon" style="background:#222">FI</div>
+            <div class="meta"><div class="name">France Info</div><div class="sub">France · News</div></div>
+            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2z"/></svg>
+            <div class="play"><svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
+          </div>
+        </div>
+
+        <div class="navbar">
+          <div class="item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
+          <div class="item active"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2z"/></svg></div>
+          <div class="item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <div class="item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></svg></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ANNOTATIONS -->
+    <div class="notes">
+      <h2>Was neu ist</h2>
+
+      <div class="note">
+        <div class="num">1</div>
+        <div>
+          <h3>Suchfeld oben</h3>
+          <p>Filtert die eigene Favoritenliste live beim Tippen &mdash; exakt dieselbe Such-UX wie schon auf dem Suche-Tab, nur auf eine kurze, bereits bekannte Liste angewendet.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="num">2</div>
+        <div>
+          <h3>Alphabet-Abschnitte mit fixiertem Header</h3>
+          <p>Sender werden nach Name gruppiert. Der Buchstaben-Header bleibt beim Scrollen oben "kleben" (im Bild: Abschnitt "R"), sodass immer erkennbar ist, wo man sich in der Liste befindet.</p>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="num">3</div>
+        <div>
+          <h3>A–Z-Schnellzugriff am Rand<span class="flag">Extra-Idee</span></h3>
+          <p>Ein schmaler Streifen am rechten Rand zeigt alle Buchstaben; vorhandene sind hervorgehoben. Antippen springt direkt zum Abschnitt &mdash; das bekannte Muster aus Kontakte-Apps. Optional, falls das den Screen zu voll wirken lässt, lässt es sich auch weglassen &mdash; Suche + Gruppierung tragen den Hauptnutzen bereits allein.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="foot">
+    Design-Referenz für die Umsetzung in <code>FavoritesScreen.kt</code> (geplant für Q3 2026, siehe
+    <a href="../../roadmap/">Roadmap</a>). Technische Notizen dazu liegen neben dieser Seite in
+    <code>docs/design/favoriten-suche-alphabet/README.md</code> im Repository.
+  </p>
+
+</div>
+</body>
+</html>
