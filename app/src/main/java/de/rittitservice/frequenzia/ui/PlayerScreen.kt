@@ -147,13 +147,24 @@ private fun Cover(station: RadioStation, modifier: Modifier = Modifier) {
 
 @Composable
 private fun StationInfo(station: RadioStation, textAlign: TextAlign) {
+    // Manche Sendernamen sind ungewöhnlich lang (z. B. "-- TOP 100 CHARTS --
+    // DJ MIXES --"). Ohne Begrenzung würde das den Player unbegrenzt in die
+    // Höhe schieben, genau wie zuvor bei der Beschreibung – daher dieselbe
+    // 3-Zeilen-Begrenzung mit Scroll bei Bedarf.
+    val nameStyle = MaterialTheme.typography.headlineSmall
+    val density = LocalDensity.current
+    val maxNameHeight = with(density) { (nameStyle.lineHeight.toPx() * 3).toDp() }
+
     Text(
         text = station.name,
-        style = MaterialTheme.typography.headlineSmall,
+        style = nameStyle,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onBackground,
         textAlign = textAlign,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = maxNameHeight)
+            .verticalScroll(rememberScrollState())
     )
     Spacer(modifier = Modifier.height(4.dp))
 
@@ -161,7 +172,6 @@ private fun StationInfo(station: RadioStation, textAlign: TextAlign) {
     // Statt den Player dadurch unbegrenzt in die Höhe zu schieben, wird die
     // Beschreibung auf 3 Zeilen begrenzt und bei Bedarf scrollbar.
     val descriptionStyle = MaterialTheme.typography.bodyMedium
-    val density = LocalDensity.current
     val maxDescriptionHeight = with(density) { (descriptionStyle.lineHeight.toPx() * 3).toDp() }
 
     Text(

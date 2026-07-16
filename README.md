@@ -25,9 +25,9 @@
 
 <table>
 <tr>
-<td width="33%"><img src="docs/screenshots/search.png" alt="Sendersuche" width="260"></td>
-<td width="33%"><img src="docs/screenshots/player.png" alt="Vollbild-Player" width="260"></td>
-<td width="33%"><img src="docs/screenshots/recently-played.png" alt="Zuletzt gehört" width="260"></td>
+<td width="33%"><img src="docs/play-store/screenshots-phone/1-search.png" alt="Sendersuche" width="260"></td>
+<td width="33%"><img src="docs/play-store/screenshots-phone/2-player.png" alt="Vollbild-Player" width="260"></td>
+<td width="33%"><img src="docs/play-store/screenshots-phone/4-recently-played.png" alt="Zuletzt gehört" width="260"></td>
 </tr>
 <tr>
 <td align="center"><sub>Sendersuche mit Live-Ergebnissen</sub></td>
@@ -113,7 +113,7 @@ Geplante nächste Features – Details und aktueller Stand auf der
 
 ## Qualitätssicherung
 
-Vor jedem Release wird die App manuell auf Handy- und Tablet-Emulator durchgetestet (Kernfunktionen, Player, Netzwerk-Resilienz, Hell-/Dunkelmodus). Ergebnis des letzten Durchlaufs: **[Interner Testbericht 1.6.1](https://ritt-itservice.github.io/frequenzia_app/interner-test/)**.
+Vor jedem Release wird die App manuell auf Handy- und Tablet-Emulator durchgetestet (Kernfunktionen, Player, Netzwerk-Resilienz, Hell-/Dunkelmodus). Ergebnis des letzten Durchlaufs: **[Interner Testbericht 1.7.0](https://ritt-itservice.github.io/frequenzia_app/interner-test/)**.
 
 ## Lizenz
 
