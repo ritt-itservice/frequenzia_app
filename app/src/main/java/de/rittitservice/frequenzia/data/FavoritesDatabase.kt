@@ -114,3 +114,15 @@ fun RadioStation.toRecentlyPlayed(playedAt: Long = System.currentTimeMillis()) =
     tags = tags,
     playedAt = playedAt
 )
+
+// Als eigenständige Funktion extrahiert (statt inline in StationViewModel),
+// damit sich die Toggle-Semantik (an/aus je nach aktuellem Zustand) direkt
+// gegen eine Test-Datenbank prüfen lässt, ohne ViewModel/Player/Netzwerk
+// mitzustarten.
+suspend fun toggleFavoriteInDb(dao: FavoritesDao, station: RadioStation) {
+    if (dao.isFavorite(station.stationuuid)) {
+        dao.deleteByUuid(station.stationuuid)
+    } else {
+        dao.insert(station.toFavorite())
+    }
+}

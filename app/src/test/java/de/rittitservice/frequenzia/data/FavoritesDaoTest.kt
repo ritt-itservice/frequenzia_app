@@ -26,6 +26,18 @@ class FavoritesDaoTest {
         tags = "pop"
     )
 
+    private val radioStation = RadioStation(
+        stationuuid = "abc-123",
+        name = "Test FM",
+        url_resolved = "https://stream.example/test",
+        favicon = null,
+        countrycode = "DE",
+        country = "Germany",
+        tags = "pop",
+        codec = null,
+        bitrate = null
+    )
+
     @Before
     fun setUp() {
         db = Room.inMemoryDatabaseBuilder(
@@ -70,5 +82,41 @@ class FavoritesDaoTest {
 
         val recent = dao.getRecent().first()
         assertTrue(recent.any { it.stationuuid == station.stationuuid })
+    }
+
+    // Deckt die Toggle-Semantik ab, die StationViewModel.toggleFavorite()
+    // verwendet: nicht favorisiert -> hinzufügen, bereits favorisiert ->
+    // entfernen. Ruft dieselbe toggleFavoriteInDb()-Funktion auf, die auch
+    // die App selbst nutzt, statt die DAO-Aufrufe im Test zu duplizieren.
+    @Test
+    fun toggleFavoriteInDb_addsStation_whenNotYetFavorite() = runTest {
+        val dao = db.favoritesDao()
+        assertFalse(dao.isFavorite(radioStation.stationuuid))
+
+        toggleFavoriteInDb(dao, radioStation)
+
+        assertTrue(dao.isFavorite(radioStation.stationuuid))
+    }
+
+    @Test
+    fun toggleFavoriteInDb_removesStation_whenAlreadyFavorite() = runTest {
+        val dao = db.favoritesDao()
+        dao.insert(station)
+        assertTrue(dao.isFavorite(radioStation.stationuuid))
+
+        toggleFavoriteInDb(dao, radioStation)
+
+        assertFalse(dao.isFavorite(radioStation.stationuuid))
+    }
+
+    @Test
+    fun toggleFavoriteInDb_calledTwice_endsUpNotFavorite() = runTest {
+        val dao = db.favoritesDao()
+
+        toggleFavoriteInDb(dao, radioStation)
+        assertTrue(dao.isFavorite(radioStation.stationuuid))
+
+        toggleFavoriteInDb(dao, radioStation)
+        assertFalse(dao.isFavorite(radioStation.stationuuid))
     }
 }

@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import de.rittitservice.frequenzia.data.FavoritesDatabase
 import de.rittitservice.frequenzia.data.RadioStation
 import de.rittitservice.frequenzia.data.StationRepository
-import de.rittitservice.frequenzia.data.toFavorite
 import de.rittitservice.frequenzia.data.toRecentlyPlayed
+import de.rittitservice.frequenzia.data.toggleFavoriteInDb
 import de.rittitservice.frequenzia.playback.PlayerController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -132,11 +132,7 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
 
     fun toggleFavorite(station: RadioStation) {
         viewModelScope.launch {
-            if (favoritesDao.isFavorite(station.stationuuid)) {
-                favoritesDao.deleteByUuid(station.stationuuid)
-            } else {
-                favoritesDao.insert(station.toFavorite())
-            }
+            toggleFavoriteInDb(favoritesDao, station)
         }
     }
 
