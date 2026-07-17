@@ -30,6 +30,14 @@ android {
         targetSdk = 37
         versionCode = 14
         versionName = "1.7.1"
+
+        // Schreibt bei Verbindungsfehlern eine rein lokale Diagnose-Datei
+        // (siehe ConnectionDiagnostics) für die Closed-Test-Phase. Nur für
+        // dieses Flag umschalten, NICHT auf BuildConfig.DEBUG prüfen – der
+        // Closed-Test-Build ist selbst ein signierter Release-Build.
+        // Vor dem ersten öffentlichen Produktions-Release hier auf "false"
+        // setzen.
+        buildConfigField("boolean", "CONNECTION_DIAGNOSTICS_ENABLED", "true")
     }
 
     signingConfigs {
@@ -70,6 +78,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {

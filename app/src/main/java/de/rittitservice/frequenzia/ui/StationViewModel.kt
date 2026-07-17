@@ -8,6 +8,7 @@ import de.rittitservice.frequenzia.data.RadioStation
 import de.rittitservice.frequenzia.data.StationRepository
 import de.rittitservice.frequenzia.data.toRecentlyPlayed
 import de.rittitservice.frequenzia.data.toggleFavoriteInDb
+import de.rittitservice.frequenzia.diagnostics.ConnectionDiagnostics
 import de.rittitservice.frequenzia.playback.PlayerController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,6 +55,7 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
 
                 override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
                     _isPlaying.value = false
+                    ConnectionDiagnostics.logFailure(application, "Wiedergabe", error)
                     _error.value = "Wiedergabe fehlgeschlagen. Sender evtl. nicht erreichbar."
                 }
             })
@@ -80,7 +82,10 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
             _isLoading.value = true
             runCatching { repository.getTopStations() }
                 .onSuccess { _searchResults.value = it }
-                .onFailure { _error.value = "Sender konnten nicht geladen werden. Bitte erneut versuchen." }
+                .onFailure { error ->
+                    ConnectionDiagnostics.logFailure(getApplication<Application>(), "Sender laden", error)
+                    _error.value = "Sender konnten nicht geladen werden. Bitte erneut versuchen."
+                }
             _isLoading.value = false
         }
     }
@@ -96,7 +101,10 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
                     tag = tag
                 )
             }.onSuccess { _searchResults.value = it }
-                .onFailure { _error.value = "Suche fehlgeschlagen. Bitte erneut versuchen." }
+                .onFailure { error ->
+                    ConnectionDiagnostics.logFailure(getApplication<Application>(), "Suche", error)
+                    _error.value = "Suche fehlgeschlagen. Bitte erneut versuchen."
+                }
             _isLoading.value = false
         }
     }
