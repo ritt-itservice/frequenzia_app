@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +36,7 @@ private const val PACKAGE_NAME = "de.rittitservice.frequenzia"
 private const val REPO_URL = "https://github.com/ritt-itservice/frequenzia_app"
 private const val LICENSE_URL = "$REPO_URL/blob/main/LICENSE"
 private const val AUTHOR_MAIL = "mailto:kontakt@ritt-itservice.de"
+private const val RADIO_BROWSER_URL = "https://www.radio-browser.info/"
 
 @Composable
 fun InfoScreen() {
@@ -113,6 +115,12 @@ fun InfoScreen() {
                 title = "Autor",
                 subtitle = "Eduard Ritt",
                 onClick = { openUrl(context, AUTHOR_MAIL) }
+            )
+            InfoRow(
+                icon = Icons.Default.Radio,
+                title = "Radio Browser",
+                subtitle = "Herzlichen Dank für die offene Sender-Datenbank",
+                onClick = { openUrl(context, RADIO_BROWSER_URL) }
             )
         }
     }
