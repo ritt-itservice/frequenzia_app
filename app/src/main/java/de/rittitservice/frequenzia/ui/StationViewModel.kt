@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import de.rittitservice.frequenzia.data.FavoritesDatabase
 import de.rittitservice.frequenzia.data.RadioStation
+import de.rittitservice.frequenzia.data.StationCache
 import de.rittitservice.frequenzia.data.StationRepository
 import de.rittitservice.frequenzia.data.toRecentlyPlayed
 import de.rittitservice.frequenzia.data.toggleFavoriteInDb
@@ -60,7 +61,17 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
                 }
             })
         }
-        loadTopStations()
+        // Sofort eine nutzbare Liste zeigen (letzter erfolgreicher Abruf,
+        // sonst die mit der App ausgelieferte Default-Liste), bevor der
+        // eigentliche Netzwerk-Abruf überhaupt zurückkommt – bei einem
+        // Server-Ausfall bleibt so etwas Brauchbares sichtbar statt einer
+        // leeren Liste. loadTopStations() läuft erst NACH diesem Suspend
+        // weiter, damit ein schnell erfolgreicher Live-Abruf nicht durch das
+        // langsamere lokale Laden wieder überschrieben wird.
+        viewModelScope.launch {
+            _searchResults.value = StationCache.loadCachedOrBundled(application)
+            loadTopStations()
+        }
     }
 
     fun clearError() {
@@ -81,10 +92,21 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             _isLoading.value = true
             runCatching { repository.getTopStations() }
-                .onSuccess { _searchResults.value = it }
+                .onSuccess { stations ->
+                    _searchResults.value = stations
+                    StationCache.save(getApplication<Application>(), stations)
+                }
                 .onFailure { error ->
                     ConnectionDiagnostics.logFailure(getApplication<Application>(), "Sender laden", error)
-                    _error.value = "Sender konnten nicht geladen werden. Bitte erneut versuchen."
+                    // Bereits sichtbare Liste (Cache/Default aus init, oder
+                    // ein vorheriger erfolgreicher Abruf) beibehalten statt
+                    // sie zu leeren – nur der Hinweistext macht deutlich,
+                    // dass sie evtl. nicht mehr aktuell ist.
+                    _error.value = if (_searchResults.value.isNotEmpty()) {
+                        "Server nicht erreichbar. Zeige zuletzt gespeicherte Sender."
+                    } else {
+                        "Sender konnten nicht geladen werden. Bitte erneut versuchen."
+                    }
                 }
             _isLoading.value = false
         }
