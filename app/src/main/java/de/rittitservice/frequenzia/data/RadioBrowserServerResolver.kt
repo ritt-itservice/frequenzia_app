@@ -15,15 +15,22 @@ object RadioBrowserServerResolver {
     private const val DNS_HOST = "all.api.radio-browser.info"
     private var cachedBaseUrl: String? = null
 
+    // Zuletzt gewählter Hostname – wird nach invalidate() von der Auswahl
+    // ausgeschlossen, damit ein Retry nicht per Zufall wieder denselben
+    // (gerade fehlgeschlagenen) Mirror trifft, wenn Alternativen existieren.
+    private var lastHostName: String? = null
+
     suspend fun resolveBaseUrl(): String {
         cachedBaseUrl?.let { return it }
 
         val baseUrl = withContext(Dispatchers.IO) {
             try {
-                val addresses = InetAddress.getAllByName(DNS_HOST)
-                val chosen = addresses.random()
-                val hostName = chosen.canonicalHostName
-                "https://$hostName/"
+                val hostNames = InetAddress.getAllByName(DNS_HOST)
+                    .map { it.canonicalHostName }
+                    .distinct()
+                val chosen = selectMirrorHost(hostNames, excluding = lastHostName)
+                lastHostName = chosen
+                "https://$chosen/"
             } catch (e: Exception) {
                 // Fallback auf einen bekannten, stabilen Mirror
                 "https://de1.api.radio-browser.info/"
@@ -39,4 +46,14 @@ object RadioBrowserServerResolver {
     fun invalidate() {
         cachedBaseUrl = null
     }
+}
+
+// Als eigenständige, reine Funktion extrahiert (statt Inline-Logik), damit
+// sich die Ausschluss-Regel direkt testen lässt, ohne echtes DNS zu benötigen.
+internal fun selectMirrorHost(hostNames: List<String>, excluding: String?): String {
+    val candidates = excluding
+        ?.let { previous -> hostNames.filterNot { it == previous } }
+        ?.takeIf { it.isNotEmpty() }
+        ?: hostNames
+    return candidates.random()
 }
