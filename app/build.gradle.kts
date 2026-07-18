@@ -28,8 +28,8 @@ android {
         applicationId = "de.rittitservice.frequenzia"
         minSdk = 26
         targetSdk = 37
-        versionCode = 15
-        versionName = "1.7.2"
+        versionCode = 16
+        versionName = "1.7.3"
 
         // Schreibt bei Verbindungsfehlern eine rein lokale Diagnose-Datei
         // (siehe ConnectionDiagnostics) für die Closed-Test-Phase. Nur für
