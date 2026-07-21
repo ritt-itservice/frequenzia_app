@@ -128,7 +128,8 @@ fun TabletApp(viewModel: StationViewModel) {
                                     isPlayerPanelVisible = true
                                 },
                                 onFavoriteToggle = { viewModel.toggleFavorite(it) },
-                                isFavorite = { it in favoriteIds }
+                                isFavorite = { it in favoriteIds },
+                                onClearHistory = { viewModel.clearRecentlyPlayed() }
                             )
                         }
                         composable(Screen.Info.route) {

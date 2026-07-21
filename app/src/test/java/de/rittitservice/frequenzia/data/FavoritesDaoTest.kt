@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -82,6 +83,38 @@ class FavoritesDaoTest {
 
         val recent = dao.getRecent().first()
         assertTrue(recent.any { it.stationuuid == station.stationuuid })
+    }
+
+    @Test
+    fun clearAll_removesEveryRecentlyPlayedEntry() = runTest {
+        val dao = db.recentlyPlayedDao()
+        dao.insert(
+            RecentlyPlayedStation(
+                stationuuid = station.stationuuid,
+                name = station.name,
+                url_resolved = station.url_resolved,
+                favicon = station.favicon,
+                countrycode = station.countrycode,
+                tags = station.tags,
+                playedAt = 1_000L
+            )
+        )
+        dao.insert(
+            RecentlyPlayedStation(
+                stationuuid = "other-station",
+                name = "Other FM",
+                url_resolved = "https://stream.example/other",
+                favicon = null,
+                countrycode = "DE",
+                tags = null,
+                playedAt = 2_000L
+            )
+        )
+        assertEquals(2, dao.getRecent().first().size)
+
+        dao.clearAll()
+
+        assertTrue(dao.getRecent().first().isEmpty())
     }
 
     // Deckt die Toggle-Semantik ab, die StationViewModel.toggleFavorite()
