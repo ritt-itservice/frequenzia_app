@@ -63,4 +63,18 @@ class FavoritesGroupingTest {
     fun groupStationsByLetter_emptyList_returnsEmptyList() {
         assertTrue(groupStationsByLetter(emptyList()).isEmpty())
     }
+
+    @Test
+    fun computeGroupStartIndices_accountsForHeaderPlusItemsPerGroup() {
+        val grouped = groupStationsByLetter(
+            listOf(station("Alpha FM"), station("Beta FM"), station("Bravo FM"))
+        )
+
+        val indices = computeGroupStartIndices(grouped)
+
+        // "A": Header bei 0, ein Sender -> nächste Gruppe startet bei 2
+        // (1 Header + 1 Zeile). "B": Header bei 2, zwei Sender.
+        assertEquals(0, indices.getValue("A"))
+        assertEquals(2, indices.getValue("B"))
+    }
 }

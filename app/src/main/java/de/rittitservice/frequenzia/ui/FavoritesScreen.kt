@@ -2,9 +2,12 @@ package de.rittitservice.frequenzia.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -14,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,9 +25,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import de.rittitservice.frequenzia.data.FavoriteStation
 import de.rittitservice.frequenzia.data.RadioStation
+import kotlinx.coroutines.launch
 import java.util.Locale
+
+private val ALPHABET_RAIL_LETTERS = listOf("#") + ('A'..'Z').map { it.toString() }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -106,30 +114,88 @@ fun FavoritesScreen(
         }
 
         val grouped = remember(filtered) { groupStationsByLetter(filtered) }
+        val groupStartIndices = remember(grouped) { computeGroupStartIndices(grouped) }
+        val availableLetters = remember(grouped) { grouped.map { it.first }.toSet() }
+        val listState = rememberLazyListState()
+        val coroutineScope = rememberCoroutineScope()
 
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            grouped.forEach { (letter, stations) ->
-                stickyHeader {
-                    Text(
-                        text = letter,
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+        Row(modifier = Modifier.weight(1f)) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                state = listState
+            ) {
+                grouped.forEach { (letter, stations) ->
+                    stickyHeader {
+                        Text(
+                            text = letter,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.background)
+                                .padding(horizontal = 20.dp, vertical = 6.dp)
+                        )
+                    }
+                    items(stations, key = { it.stationuuid }) { fav ->
+                        val station = fav.toRadioStation()
+                        StationRow(
+                            station = station,
+                            isFavorite = true,
+                            onSelect = { onStationSelect(station) },
+                            onPlay = { onStationPlay(station) },
+                            onFavoriteToggle = { onFavoriteToggle(station) }
+                        )
+                    }
+                }
+            }
+
+            // A–Z-Schnellzugriff: Tippen auf einen Buchstaben springt zum
+            // jeweiligen Abschnitt. Buchstaben ohne eigene Favoriten sind
+            // abgeblendet und nicht antippbar. Jeder Buchstabe bekommt sein
+            // eigenes clickable statt einer selbstgebauten Gestenerkennung
+            // über die ganze Spalte – zuverlässiger und großzügigere
+            // Trefferfläche pro Buchstabe.
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ALPHABET_RAIL_LETTERS.forEach { letter ->
+                    val isAvailable = letter in availableLetters
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.background)
-                            .padding(horizontal = 20.dp, vertical = 6.dp)
-                    )
-                }
-                items(stations, key = { it.stationuuid }) { fav ->
-                    val station = fav.toRadioStation()
-                    StationRow(
-                        station = station,
-                        isFavorite = true,
-                        onSelect = { onStationSelect(station) },
-                        onPlay = { onStationPlay(station) },
-                        onFavoriteToggle = { onFavoriteToggle(station) }
-                    )
+                            .weight(1f)
+                            .then(
+                                if (isAvailable) {
+                                    Modifier.clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        val targetIndex = groupStartIndices.getValue(letter)
+                                        coroutineScope.launch { listState.scrollToItem(targetIndex) }
+                                    }
+                                } else {
+                                    Modifier
+                                }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = letter,
+                            fontSize = 10.sp,
+                            fontWeight = if (isAvailable) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isAvailable) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -149,6 +215,19 @@ internal fun groupStationsByLetter(stations: List<FavoriteStation>): List<Pair<S
     return grouped.entries
         .sortedWith(compareBy { if (it.key == "#") "" else it.key })
         .map { it.key to it.value }
+}
+
+// Berechnet für jeden Buchstaben-Abschnitt den Index seines stickyHeader-
+// Eintrags innerhalb der flachen LazyColumn-Item-Liste (Header + Zeilen pro
+// Gruppe), damit LazyListState.scrollToItem() gezielt dorthin springen kann.
+internal fun computeGroupStartIndices(grouped: List<Pair<String, List<FavoriteStation>>>): Map<String, Int> {
+    var index = 0
+    val result = mutableMapOf<String, Int>()
+    grouped.forEach { (letter, stations) ->
+        result[letter] = index
+        index += 1 + stations.size
+    }
+    return result
 }
 
 private fun FavoriteStation.toRadioStation() = RadioStation(
