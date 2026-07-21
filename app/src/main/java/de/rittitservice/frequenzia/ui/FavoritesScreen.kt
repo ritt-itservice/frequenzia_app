@@ -1,19 +1,31 @@
 package de.rittitservice.frequenzia.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import de.rittitservice.frequenzia.data.FavoriteStation
 import de.rittitservice.frequenzia.data.RadioStation
+import java.util.Locale
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FavoritesScreen(
     favorites: List<FavoriteStation>,
@@ -45,18 +57,98 @@ fun FavoritesScreen(
         return
     }
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(favorites, key = { it.stationuuid }) { fav ->
-            val station = fav.toRadioStation()
-            StationRow(
-                station = station,
-                isFavorite = true,
-                onSelect = { onStationSelect(station) },
-                onPlay = { onStationPlay(station) },
-                onFavoriteToggle = { onFavoriteToggle(station) }
-            )
+    var query by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(28.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent
+            ),
+            placeholder = { Text("Favoriten durchsuchen …") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            singleLine = true
+        )
+
+        // Rein lokales Filtern über die bereits geladenen Favoriten – kein
+        // Netzwerk-Aufruf nötig, daher auch kein Debounce wie in der
+        // Sendersuche.
+        val filtered = remember(favorites, query) {
+            if (query.isBlank()) {
+                favorites
+            } else {
+                favorites.filter { it.name.contains(query, ignoreCase = true) }
+            }
+        }
+
+        if (filtered.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Keine Favoriten gefunden für „$query“.",
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            return@FavoritesScreen
+        }
+
+        val grouped = remember(filtered) { groupStationsByLetter(filtered) }
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            grouped.forEach { (letter, stations) ->
+                stickyHeader {
+                    Text(
+                        text = letter,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(horizontal = 20.dp, vertical = 6.dp)
+                    )
+                }
+                items(stations, key = { it.stationuuid }) { fav ->
+                    val station = fav.toRadioStation()
+                    StationRow(
+                        station = station,
+                        isFavorite = true,
+                        onSelect = { onStationSelect(station) },
+                        onPlay = { onStationPlay(station) },
+                        onFavoriteToggle = { onFavoriteToggle(station) }
+                    )
+                }
+            }
         }
     }
+}
+
+// Gruppiert nach Anfangsbuchstabe (Großschreibung); Sendernamen ohne
+// führenden Buchstaben (Ziffern, Sonderzeichen) landen gemeinsam im
+// "#"-Abschnitt, der vor "A" einsortiert wird. Als eigenständige Funktion
+// extrahiert, damit sie sich ohne Compose/UI direkt testen lässt.
+internal fun groupStationsByLetter(stations: List<FavoriteStation>): List<Pair<String, List<FavoriteStation>>> {
+    val sorted = stations.sortedBy { it.name.trim().uppercase(Locale.GERMAN) }
+    val grouped = sorted.groupBy { station ->
+        val first = station.name.trim().firstOrNull()?.uppercaseChar()
+        if (first != null && first.isLetter()) first.toString() else "#"
+    }
+    return grouped.entries
+        .sortedWith(compareBy { if (it.key == "#") "" else it.key })
+        .map { it.key to it.value }
 }
 
 private fun FavoriteStation.toRadioStation() = RadioStation(
