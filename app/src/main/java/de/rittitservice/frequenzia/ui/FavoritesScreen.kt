@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.StarBorder
@@ -32,6 +34,14 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 private val ALPHABET_RAIL_LETTERS = listOf("#") + ('A'..'Z').map { it.toString() }
+
+// Feste statt anteilige Höhe pro Buchstabe: bei wenig verfügbarer Höhe (z. B.
+// Handy im Querformat, wo Suchfeld + Bottom-Nav einen Großteil beanspruchen)
+// würde eine Gleichverteilung über 27 Buchstaben sonst pro Zeile nur wenige
+// Pixel übrig lassen – der Text wird dann faktisch unlesbar/unsichtbar statt
+// nur kleiner. Die Spalte scrollt stattdessen selbstständig, wenn nicht alle
+// Buchstaben in den verfügbaren Platz passen.
+private val RAIL_LETTER_HEIGHT = 20.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -161,7 +171,8 @@ fun FavoritesScreen(
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .width(28.dp),
+                    .width(28.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ALPHABET_RAIL_LETTERS.forEach { letter ->
@@ -169,7 +180,7 @@ fun FavoritesScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
+                            .height(RAIL_LETTER_HEIGHT)
                             .then(
                                 if (isAvailable) {
                                     Modifier.clickable(
