@@ -166,6 +166,12 @@ class StationViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun clearRecentlyPlayed() {
+        viewModelScope.launch {
+            recentlyPlayedDao.clearAll()
+        }
+    }
+
     override fun onCleared() {
         playerController.release()
         super.onCleared()

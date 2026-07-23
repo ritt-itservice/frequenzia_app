@@ -243,7 +243,8 @@ private fun TabletNavHost(
                     onStationActivated()
                 },
                 onFavoriteToggle = { viewModel.toggleFavorite(it) },
-                isFavorite = { it in favoriteIds }
+                isFavorite = { it in favoriteIds },
+                onClearHistory = { viewModel.clearRecentlyPlayed() }
             )
         }
         composable(Screen.Info.route) {

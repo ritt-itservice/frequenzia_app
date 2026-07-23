@@ -34,6 +34,9 @@ interface RecentlyPlayedDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(station: RecentlyPlayedStation)
+
+    @Query("DELETE FROM recently_played")
+    suspend fun clearAll()
 }
 
 @Dao
