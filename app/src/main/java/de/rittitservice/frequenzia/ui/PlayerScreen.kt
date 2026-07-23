@@ -236,19 +236,30 @@ private fun PortraitPlayerContent(
     onTogglePlayPause: () -> Unit,
     onFavoriteToggle: () -> Unit
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Spacer(modifier = Modifier.height(48.dp))
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        // Ein rein breitenbasiertes Cover (fillMaxWidth) sprengt in einem
+        // schmalen, aber niedrigen Bereich (z. B. Tablet-Seitenpanel) die
+        // verfügbare Höhe und drückt Waveform/Steuerung fast übereinander –
+        // daher zusätzlich an der Höhe gedeckelt.
+        val coverSize = minOf(maxWidth * 0.75f, maxHeight * 0.35f)
 
-        // Kein Fortschritt/Scrubber – Live-Streams haben keine Position/Dauer.
-        Cover(station, modifier = Modifier.fillMaxWidth(0.75f))
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
-        StationInfo(station, textAlign = TextAlign.Center)
-        Spacer(modifier = Modifier.height(16.dp))
-        StationWaveform(isPlaying = isPlaying)
-        Spacer(modifier = Modifier.weight(1f))
-        Controls(isPlaying, isFavorite, onTogglePlayPause, onFavoriteToggle)
-        Spacer(modifier = Modifier.height(32.dp))
+            // Kein Fortschritt/Scrubber – Live-Streams haben keine Position/Dauer.
+            Cover(station, modifier = Modifier.size(coverSize))
+
+            Spacer(modifier = Modifier.height(24.dp))
+            StationInfo(station, textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(16.dp))
+            StationWaveform(isPlaying = isPlaying)
+            Spacer(modifier = Modifier.weight(1f))
+            Controls(isPlaying, isFavorite, onTogglePlayPause, onFavoriteToggle)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
     }
 }
 
@@ -263,20 +274,27 @@ private fun LandscapePlayerContent(
     onTogglePlayPause: () -> Unit,
     onFavoriteToggle: () -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxSize(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Cover(station, modifier = Modifier.fillMaxHeight(0.75f))
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        // Analog zum Hochformat: zusätzlich an der Breite gedeckelt, damit
+        // ein sehr breiter, aber niedriger Bereich das Cover nicht über die
+        // gesamte Fläche aufbläst.
+        val coverSize = minOf(maxHeight * 0.75f, maxWidth * 0.4f)
 
-        Spacer(modifier = Modifier.width(32.dp))
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Cover(station, modifier = Modifier.size(coverSize))
 
-        Column(modifier = Modifier.weight(1f)) {
-            StationInfo(station, textAlign = TextAlign.Start)
-            Spacer(modifier = Modifier.height(16.dp))
-            StationWaveform(isPlaying = isPlaying)
-            Spacer(modifier = Modifier.height(24.dp))
-            Controls(isPlaying, isFavorite, onTogglePlayPause, onFavoriteToggle)
+            Spacer(modifier = Modifier.width(32.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                StationInfo(station, textAlign = TextAlign.Start)
+                Spacer(modifier = Modifier.height(16.dp))
+                StationWaveform(isPlaying = isPlaying)
+                Spacer(modifier = Modifier.height(24.dp))
+                Controls(isPlaying, isFavorite, onTogglePlayPause, onFavoriteToggle)
+            }
         }
     }
 }

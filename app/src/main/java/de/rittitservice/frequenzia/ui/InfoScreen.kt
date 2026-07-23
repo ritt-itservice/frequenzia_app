@@ -7,7 +7,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -50,6 +52,11 @@ fun InfoScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            // Auf kurzen Bildschirmen (z. B. Tablet im Querformat, wo die
+            // Navigationsleiste zusätzlich Höhe kostet) reicht sonst der
+            // Platz nicht für alle InfoRows – ohne Scroll wird der Rest
+            // einfach abgeschnitten statt erreichbar zu sein.
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
